@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../ChancelorUpgradeable.sol";
-import "../extensions/ChancelorSettingsUpgradeable.sol";
-import "../extensions/ChancelorCountingSimpleUpgradeable.sol";
-import "../extensions/SenateVotesUpgradeable.sol";
-import "../extensions/SenateVotesQuorumFractionUpgradeable.sol";
-import "../extensions/ChancelorTimelockControlUpgradeable.sol";
-import "../compatibility/ChancelorCompatibilityBravoUpgradeable.sol";
+import "../../contracts/ChancelorUpgradeable.sol";
+import "../../contracts/extensions/ChancelorSettingsUpgradeable.sol";
+import "../../contracts/extensions/SenateVotesUpgradeable.sol";
+import "../../contracts/extensions/SenateVotesQuorumFractionUpgradeable.sol";
+import "../../contracts/extensions/ChancelorTimelockControlUpgradeable.sol";
+import "../../contracts/compatibility/ChancelorCompatibilityBravoUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract RepublicChancelor is
@@ -15,7 +14,6 @@ contract RepublicChancelor is
     ChancelorUpgradeable,
     ChancelorSettingsUpgradeable,
     ChancelorCompatibilityBravoUpgradeable,
-    //ChancelorCountingSimpleUpgradeable,
     SenateVotesUpgradeable,
     SenateVotesQuorumFractionUpgradeable,
     ChancelorTimelockControlUpgradeable
