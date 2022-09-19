@@ -5,8 +5,8 @@
   },
   "scripts": {
     "dev:commit": "git add -A && git commit -m",
-    "dev:my_branch": "dotenv -- cross-var git checkout -b %RELEASE_VERSION%",
-    "dev:push": "dotenv -- cross-var git push origin %RELEASE_VERSION%"
+    "dev:my_branch": "dotenv -- cross-var git checkout -b %RELEASE_BRANCH%",
+    "dev:push": "dotenv -- cross-var git push origin %RELEASE_BRANCH%"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
