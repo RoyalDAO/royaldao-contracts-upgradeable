@@ -1,2 +1,2 @@
-# royaldao_contracts
-RoyalDAO Contracts
+# Chancelor
+Senate spin on Governor Pattern
