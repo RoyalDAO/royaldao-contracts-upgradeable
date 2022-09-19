@@ -1,12 +1,26 @@
 {
-  "dependencies": {
-    "dotenv": "^16.0.2",
-    "hardhat": "^2.9.9"
+  "name": "@royaldao/royaldao-contract-upgradeable",
+  "version": "1.0.5",
+  "description": "Upgradeable Contracts from RoyalDAO",
+  "repository": {
+    "url": "https://github.com/RoyalDAO/royaldao-contracts-upgradeable/",
+    "type": "git"
   },
+  "files": [
+    "contracts/Governance/*.sol",
+    "contracts/Governance/compatibility/*.sol",
+    "contracts/Governance/extensions/*.sol"
+  ],
+  "author": "Vin Rodrigues <rodrigues.mvinicius@gmail.com>",
+  "license": "MIT",
   "scripts": {
     "dev:commit": "git add -A && git commit -m",
     "dev:my_branch": "dotenv -- cross-var git checkout -b %RELEASE_BRANCH%",
     "dev:push": "dotenv -- cross-var git push origin %RELEASE_BRANCH%"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.2",
+    "hardhat": "^2.9.9"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
@@ -21,6 +35,7 @@
     "@openzeppelin/contracts": "^4.7.3",
     "@openzeppelin/contracts-upgradeable": "^4.7.3",
     "@openzeppelin/hardhat-upgrades": "^1.20.0",
+    "@royaldao/royaldao-contract-upgradeable": "^1.0.5",
     "@typechain/ethers-v5": "^10.1.0",
     "@typechain/hardhat": "^6.1.2",
     "@types/chai": "^4.2.0",
