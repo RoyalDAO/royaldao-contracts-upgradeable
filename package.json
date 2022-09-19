@@ -1,11 +1,17 @@
 {
   "name": "@royaldao/royaldao-contract-upgradeable",
-  "version": "1.0.3",
+  "version": "1.0.1",
   "description": "Upgradeable Contracts from RoyalDAO",
   "repository": {
-    "url": "https://github.com/RoyalDAO/royaldao-contracts-upgradeable/contracts/",
+    "url": "https://github.com/RoyalDAO/royaldao-contracts-upgradeable/",
     "type": "git"
   },
+  "files": [
+    "contracts/*.sol",
+    "contracts/compatibility/*.sol",
+    "contracts/extensions/*.sol",
+    "contracts/utils/*.sol"
+  ],
   "author": "Vin Rodrigues <rodrigues.mvinicius@gmail.com>",
   "license": "MIT",
   "scripts": {
@@ -30,7 +36,7 @@
     "@openzeppelin/contracts": "^4.7.3",
     "@openzeppelin/contracts-upgradeable": "^4.7.3",
     "@openzeppelin/hardhat-upgrades": "^1.20.0",
-    "@royaldao/royaldao-contract-upgradeable": "^1.0.2",
+    "@royaldao/royaldao-contract-upgradeable": "^1.0.0",
     "@typechain/ethers-v5": "^10.1.0",
     "@typechain/hardhat": "^6.1.2",
     "@types/chai": "^4.2.0",
