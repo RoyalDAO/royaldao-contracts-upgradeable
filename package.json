@@ -3,6 +3,11 @@
     "dotenv": "^16.0.2",
     "hardhat": "^2.9.9"
   },
+  "scripts": {
+    "dev:commit": "git add -A && git commit -m",
+    "dev:my_branch": "dotenv -- cross-var git checkout -b %RELEASE_VERSION%",
+    "dev:push": "dotenv -- cross-var git push origin %RELEASE_VERSION%"
+  },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
@@ -24,6 +29,8 @@
     "@types/node": ">=12.0.0",
     "base64-sol": "^1.1.0",
     "chai": "^4.2.0",
+    "cross-var": "^1.1.0",
+    "dotenv-cli": "^6.0.0",
     "ethers": "^5.4.7",
     "hardhat-contract-sizer": "^2.6.1",
     "hardhat-deploy": "^0.11.12",
