@@ -7,10 +7,9 @@
     "type": "git"
   },
   "files": [
-    "contracts/*.sol",
-    "contracts/compatibility/*.sol",
-    "contracts/extensions/*.sol",
-    "contracts/utils/*.sol"
+    "contracts/Governance/*.sol",
+    "contracts/Governance/compatibility/*.sol",
+    "contracts/Governance/extensions/*.sol"
   ],
   "author": "Vin Rodrigues <rodrigues.mvinicius@gmail.com>",
   "license": "MIT",
@@ -36,6 +35,7 @@
     "@openzeppelin/contracts": "^4.7.3",
     "@openzeppelin/contracts-upgradeable": "^4.7.3",
     "@openzeppelin/hardhat-upgrades": "^1.20.0",
+    "@royaldao/royaldao-contract-upgradeable": "^1.0.5",
     "@typechain/ethers-v5": "^10.1.0",
     "@typechain/hardhat": "^6.1.2",
     "@types/chai": "^4.2.0",
