@@ -643,14 +643,6 @@
     proper-lockfile "^4.1.1"
     solidity-ast "^0.4.15"
 
-"@royaldao/royaldao-contract-upgradeable@^1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@royaldao/royaldao-contract-upgradeable/-/royaldao-contract-upgradeable-1.0.5.tgz#39c9ede6d74f4cea3331870cf01ae28dfedea04e"
-  integrity sha512-tU8t5mQo6Fx3m24iaa4mxIIJXzpsdvGVxtiYi3vrzHsAcL5wI/C/n7z7AgDkD7EWwTsJZnEdR4GMj5JsacnZvw==
-  dependencies:
-    dotenv "^16.0.2"
-    hardhat "^2.9.9"
-
 "@scure/base@~1.1.0":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@scure/base/-/base-1.1.1.tgz#ebb651ee52ff84f420097055f4bf46cfba403938"

@@ -12,7 +12,7 @@ import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
  *
  * _Available since v4.4._
  */
-abstract contract ChancelorComplexSettingsUpgradeable is
+abstract contract SenateComplexSettingsUpgradeable is
     Initializable,
     ChancelorUpgradeable
 {
@@ -68,13 +68,14 @@ abstract contract ChancelorComplexSettingsUpgradeable is
      */
     function votingDelay() public view virtual override returns (uint256) {
         require(_typeIdCounter.current() > 0, "No Proposal Types created!");
-        return votingDelayOfType(1);
+        return 0;
+        //return votingDelayOfType(1);
     }
 
     /**
      * @dev See {IChancelor-votingDelay}.
      */
-    function votingDelayOfType(uint256 _typeId)
+    /*function votingDelayOfType(uint256 _typeId)
         public
         view
         virtual
@@ -86,20 +87,21 @@ abstract contract ChancelorComplexSettingsUpgradeable is
             "Type with given Id not created yet!"
         );
         return proposalTypes[_typeId].votingDelay;
-    }
+    }*/
 
     /**
      * @dev See {IChancelor-votingPeriod}.
      */
     function votingPeriod() public view virtual override returns (uint256) {
         require(_typeIdCounter.current() > 0, "No Proposal Types created!");
-        return votingPeriodOfType(1);
+        return 0;
+        //return votingPeriodOfType(1);
     }
 
     /**
      * @dev See {IChancelor-votingPeriod}.
      */
-    function votingPeriodOfType(uint256 _typeId)
+    /*function votingPeriodOfType(uint256 _typeId)
         public
         view
         virtual
@@ -111,7 +113,7 @@ abstract contract ChancelorComplexSettingsUpgradeable is
             "Type with given Id not created yet!"
         );
         return proposalTypes[_typeId].votingPeriod;
-    }
+    }*/
 
     /**
      * @dev See {Chancelor-proposalThreshold}.
@@ -130,7 +132,7 @@ abstract contract ChancelorComplexSettingsUpgradeable is
     /**
      * @dev See {Chancelor-proposalThreshold}.
      */
-    function proposalThresholdOfType(uint256 _typeId)
+    /*function proposalThresholdOfType(uint256 _typeId)
         public
         view
         virtual
@@ -143,7 +145,7 @@ abstract contract ChancelorComplexSettingsUpgradeable is
         );
 
         return proposalTypes[_typeId].proposalThreshold;
-    }
+    }*/
 
     /**
      * @dev Update the voting delay. This operation can only be performed through a governance proposal.

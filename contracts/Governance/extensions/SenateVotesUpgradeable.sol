@@ -3,11 +3,11 @@
 
 pragma solidity ^0.8.0;
 
-import "../ChancelorUpgradeable.sol";
+import "../SenateUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/utils/IVotesUpgradeable.sol";
-import "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol";
 
 /**
  * @dev Extension of {Governor} for voting weight extraction from an {ERC20Votes} token, or since v4.5 an {ERC721Votes} token.
@@ -16,52 +16,15 @@ import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeab
  *
  * @custom:storage-size 51
  */
-abstract contract SenateVotesUpgradeable is
-    Initializable,
-    ChancelorUpgradeable
-{
-    //TODO: Quarantine from senate
-    //TODO: Ban from senate
+abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
     //TODO: Complex votes for single vote by token
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
-    EnumerableSetUpgradeable.AddressSet internal tokens;
-    EnumerableSetUpgradeable.AddressSet internal tokensUpgradeable;
-
-    //IVotesUpgradeable public token;
-
-    function __SenateVotes_init(
-        IVotesUpgradeable[] memory _upgradeableTokens,
-        IVotes[] memory _tokens
-    ) internal onlyInitializing {
-        __SenateVotes_init_unchained(_upgradeableTokens, _tokens);
+    function __SenateVotes_init() internal onlyInitializing {
+        __SenateVotes_init_unchained();
     }
 
-    function __SenateVotes_init_unchained(
-        IVotesUpgradeable[] memory _upgradeableTokens,
-        IVotes[] memory _tokens
-    ) internal onlyInitializing {
-        for (uint256 idx = 0; idx < _upgradeableTokens.length; idx++) {
-            tokensUpgradeable.add(address(_upgradeableTokens[idx]));
-        }
-        for (uint256 idx = 0; idx < _tokens.length; idx++) {
-            tokensUpgradeable.add(address(_tokens[idx]));
-        }
-        //token = tokenAddress;
-    }
-
-    function acceptToSenate(IVotesUpgradeable _upgradeableToken, IVotes _token)
-        internal
-        onlyChancelor
-    {
-        if (!tokens.contains(address(_token)) && address(_token) != address(0))
-            tokens.add(address(_token));
-
-        if (
-            !tokensUpgradeable.contains(address(_upgradeableToken)) &&
-            address(_upgradeableToken) != address(0)
-        ) tokensUpgradeable.add(address(_upgradeableToken));
-    }
+    function __SenateVotes_init_unchained() internal onlyInitializing {}
 
     /**
      * Read the voting weight from the token's built in snapshot mechanism (see {Chancelor-_getVotes}).
@@ -74,17 +37,76 @@ abstract contract SenateVotesUpgradeable is
         uint256 totalVotes;
 
         for (uint256 idx = 0; idx < tokens.values().length; idx++) {
-            totalVotes += IVotes(tokens.values()[idx]).getPastVotes(
-                account,
-                blockNumber
-            );
-        }
-        for (uint256 idx = 0; idx < tokensUpgradeable.values().length; idx++) {
-            totalVotes += IVotesUpgradeable(tokensUpgradeable.values()[idx])
-                .getPastVotes(account, blockNumber);
+            if (
+                banned.contains(tokens.values()[idx]) ||
+                quarantine[tokens.values()[idx]] >= block.number
+            ) continue;
+
+            if (
+                IERC165Upgradeable(tokens.values()[idx]).supportsInterface(
+                    type(IVotesUpgradeable).interfaceId
+                )
+            )
+                totalVotes += IVotesUpgradeable(tokens.values()[idx])
+                    .getPastVotes(account, blockNumber);
         }
 
         return totalVotes;
+    }
+
+    /**
+     * Read the total voting suply at last block mined.
+     */
+    function _getTotalSuply() internal view virtual override returns (uint256) {
+        uint256 totalVotes;
+
+        for (uint256 idx = 0; idx < tokens.values().length; idx++) {
+            if (
+                banned.contains(tokens.values()[idx]) ||
+                quarantine[tokens.values()[idx]] >= (block.number - 1)
+            ) continue;
+
+            if (
+                IERC165Upgradeable(tokens.values()[idx]).supportsInterface(
+                    type(IVotesUpgradeable).interfaceId
+                )
+            )
+                totalVotes += IVotesUpgradeable(tokens.values()[idx])
+                    .getPastTotalSupply(block.number - 1);
+        }
+
+        return totalVotes;
+    }
+
+    /**
+     * @dev Check if `account` at a specific `blockNumber` reachs the treshold.
+     */
+    function _checkTresholdReached(
+        address account,
+        uint256 blockNumber,
+        uint256 proposalThreshold
+    ) internal view virtual override returns (bool) {
+        uint256 totalVotes;
+
+        for (uint256 idx = 0; idx < tokens.values().length; idx++) {
+            if (
+                banned.contains(tokens.values()[idx]) ||
+                quarantine[tokens.values()[idx]] >= block.number
+            ) continue;
+
+            if (
+                IERC165Upgradeable(tokens.values()[idx]).supportsInterface(
+                    type(IVotesUpgradeable).interfaceId
+                )
+            ) {
+                totalVotes += IVotesUpgradeable(tokens.values()[idx])
+                    .getPastVotes(account, blockNumber);
+
+                if (totalVotes >= proposalThreshold) return true;
+            }
+        }
+
+        return false;
     }
 
     /**

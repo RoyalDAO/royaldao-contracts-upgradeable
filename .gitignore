@@ -4,6 +4,9 @@ coverage
 coverage.json
 typechain
 typechain-types
+test
+deploy
+contracts/mocks
 
 #Hardhat files
 cache

@@ -174,18 +174,6 @@ abstract contract IChancelorUpgradeable is Initializable, IERC165Upgradeable {
 
     /**
      * @notice module:user-config
-     * @dev Delay, in number of block, between the proposal is created and the vote starts. This can be increassed to
-     * leave time for users to buy voting power, or delegate it, before the voting of a proposal starts.
-     * NOTE this function is used by the complex settings mode to give voting delay by proposal type
-     */
-    function votingDelayOfType(uint256 _typeId)
-        public
-        view
-        virtual
-        returns (uint256);
-
-    /**
-     * @notice module:user-config
      * @dev Delay, in number of blocks, between the vote start and vote ends.
      *
      * NOTE: The {votingDelay} can delay the start of the vote. This must be considered when setting the voting
@@ -195,26 +183,22 @@ abstract contract IChancelorUpgradeable is Initializable, IERC165Upgradeable {
 
     /**
      * @notice module:user-config
-     * @dev Delay, in number of blocks, between the vote start and vote ends.
-     *
-     * NOTE: The {votingDelay} can delay the start of the vote. This must be considered when setting the voting
-     * duration compared to the voting delay.
-     * NOTE: this function is used by the complex settings mode to give voting period by proposal type
-     */
-    function votingPeriodOfType(uint256 _typeId)
-        public
-        view
-        virtual
-        returns (uint256);
-
-    /**
-     * @notice module:user-config
      * @dev Minimum number of cast voted required for a proposal to be successful.
      *
      * Note: The `blockNumber` parameter corresponds to the snapshot used for counting vote. This allows to scale the
      * quorum depending on values such as the totalSupply of a token at this block (see {ERC20Votes}).
      */
     function quorum(uint256 blockNumber) public view virtual returns (uint256);
+
+    function getSettings()
+        public
+        view
+        virtual
+        returns (
+            uint256 proposalThreshold,
+            uint256 votingDelay,
+            uint256 votingPeriod
+        );
 
     /**
      * @notice module:reputation
@@ -256,20 +240,6 @@ abstract contract IChancelorUpgradeable is Initializable, IERC165Upgradeable {
      * Emits a {ProposalCreated} event.
      */
     function propose(
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        string memory description
-    ) public virtual returns (uint256 proposalId);
-
-    /**
-     * @dev Create a new proposal of given type id. Vote start {IChancelor-votingDelay} blocks after the proposal is created and ends
-     * {IChancelor-votingPeriod} blocks after the voting starts.
-     *
-     * Emits a {ProposalCreated} event.
-     */
-    function proposeOfType(
-        uint256 typeId,
         address[] memory targets,
         uint256[] memory values,
         bytes[] memory calldatas,
