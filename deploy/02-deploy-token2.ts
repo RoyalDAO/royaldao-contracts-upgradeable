@@ -10,13 +10,15 @@ const GAS_PRICE_LINK = 1e9;
 
 const deployToken2: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployments, getNamedAccounts } = hre;
-  const { deploy, log, save } = deployments;
+  const { deploy, log, save, get } = deployments;
 
   const { deployer } = await getNamedAccounts();
   const { chainId } = network.config;
 
+  const senate = await get("RepublicSenate");
+
   const Token2Factory = await ethers.getContractFactory("Token2");
-  const token2 = await upgrades.deployProxy(Token2Factory);
+  const token2 = await upgrades.deployProxy(Token2Factory, [senate.address]);
   await token2.deployed();
 
   console.log(token2.address, " Token2(proxy) address");

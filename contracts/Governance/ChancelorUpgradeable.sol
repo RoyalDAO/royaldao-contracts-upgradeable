@@ -14,6 +14,7 @@ import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/TimersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./IChancelorUpgradeable.sol";
 
 /**
@@ -40,6 +41,7 @@ abstract contract ChancelorUpgradeable is
     ContextUpgradeable,
     ERC165Upgradeable,
     EIP712Upgradeable,
+    OwnableUpgradeable,
     IChancelorUpgradeable,
     IERC721ReceiverUpgradeable,
     IERC1155ReceiverUpgradeable
@@ -105,6 +107,8 @@ abstract contract ChancelorUpgradeable is
         onlyInitializing
     {
         _name = name_;
+
+        __Ownable_init();
     }
 
     /**
@@ -248,19 +252,6 @@ abstract contract ChancelorUpgradeable is
     }
 
     /**
-     * @dev Part of the Chancelor Complex Settings: _"The number of votes required in order for a voter to become a proposer by proposal type id"_.
-     */
-    function proposalThresholdOfType(uint256 _typeId)
-        public
-        view
-        virtual
-        returns (uint256)
-    {
-        require(_typeId >= 0, "No proposal type id informed");
-        return 0;
-    }
-
-    /**
      * @dev Part of the Chancelor Bravo's interface: _"The number of votes required in order for a voter to become a proposer"_.
      */
     function proposalThreshold() public view virtual returns (uint256) {
@@ -326,10 +317,7 @@ abstract contract ChancelorUpgradeable is
         bytes[] memory calldatas,
         string memory description
     ) public virtual override returns (uint256) {
-        require(
-            getVotes(_msgSender(), block.number - 1) >= proposalThreshold(),
-            "Chancelor: proposer votes below proposal threshold"
-        );
+        (, uint256 currVotingDelay, uint256 currVotingPeriod) = getSettings();
 
         return
             _propose(
@@ -337,35 +325,8 @@ abstract contract ChancelorUpgradeable is
                 values,
                 calldatas,
                 description,
-                votingDelay().toUint64(),
-                votingPeriod().toUint64()
-            );
-    }
-
-    /**
-     * @dev See {IChancelor-propose}.
-     */
-    function proposeOfType(
-        uint256 typeId,
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        string memory description
-    ) public virtual override returns (uint256) {
-        require(
-            getVotes(_msgSender(), block.number - 1) >=
-                proposalThresholdOfType(typeId),
-            "Chancelor: proposer votes below proposal threshold"
-        );
-
-        return
-            _propose(
-                targets,
-                values,
-                calldatas,
-                description,
-                votingDelayOfType(typeId).toUint64(),
-                votingPeriodOfType(typeId).toUint64()
+                currVotingDelay.toUint64(),
+                currVotingPeriod.toUint64()
             );
     }
 
@@ -380,8 +341,10 @@ abstract contract ChancelorUpgradeable is
         uint64 _votingDelay,
         uint64 votingPeriod
     ) private returns (uint256) {
+        (uint256 currProposalThreshold, , ) = getSettings();
+
         require(
-            getVotes(_msgSender(), block.number - 1) >= proposalThreshold(),
+            getVotes(_msgSender(), block.number - 1) >= currProposalThreshold,
             "Chancelor: proposer votes below proposal threshold"
         );
 
@@ -402,17 +365,17 @@ abstract contract ChancelorUpgradeable is
         );
         require(targets.length > 0, "Chancelor: empty proposal");
 
-        ProposalCore storage proposal = _proposals[proposalId];
+        //ProposalCore storage proposal = _proposals[proposalId];
         require(
-            proposal.voteStart.isUnset(),
+            _proposals[proposalId].voteStart.isUnset(),
             "Chancelor: proposal already exists"
         );
 
         uint64 snapshot = block.number.toUint64() + _votingDelay;
         uint64 deadline = snapshot + votingPeriod;
 
-        proposal.voteStart.setDeadline(snapshot);
-        proposal.voteEnd.setDeadline(deadline);
+        _proposals[proposalId].voteStart.setDeadline(snapshot);
+        _proposals[proposalId].voteEnd.setDeadline(deadline);
 
         emit ProposalCreated(
             proposalId,
@@ -791,5 +754,5 @@ abstract contract ChancelorUpgradeable is
      * variables without shifting down storage in the inheritance chain.
      * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
      */
-    uint256[46] private __gap;
+    uint256[45] private __gap;
 }

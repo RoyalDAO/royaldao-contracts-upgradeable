@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-import "./SenateVotesUpgradeable.sol";
+import "../SenateUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CheckpointsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -17,7 +17,7 @@ import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeab
  */
 abstract contract SenateVotesQuorumFractionUpgradeable is
     Initializable,
-    SenateVotesUpgradeable
+    SenateUpgradeable
 {
     using CheckpointsUpgradeable for CheckpointsUpgradeable.History;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
@@ -105,15 +105,11 @@ abstract contract SenateVotesQuorumFractionUpgradeable is
     {
         uint256 totalPastVotes;
 
-        for (uint256 idx = 0; idx < tokens.values().length; idx++) {
-            totalPastVotes += IVotes(tokens.values()[idx]).getPastTotalSupply(
-                blockNumber
-            );
-        }
-        for (uint256 idx = 0; idx < tokensUpgradeable.values().length; idx++) {
-            totalPastVotes += IVotesUpgradeable(tokensUpgradeable.values()[idx])
-                .getPastTotalSupply(blockNumber);
-        }
+        totalPastVotes += getPastTotalSupply(blockNumber);
+        // _delegateCheckpoints[account].getAtProbablyRecentBlock(
+        //   blockNumber
+        //);
+
         return
             (totalPastVotes * quorumNumerator(blockNumber)) /
             quorumDenominator();

@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../ChancelorUpgradeable.sol";
+import "../SenateUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
@@ -11,9 +11,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  *
  * _Available since v4.4._
  */
-abstract contract ChancelorSettingsUpgradeable is
+abstract contract SenateSettingsUpgradeable is
     Initializable,
-    ChancelorUpgradeable
+    SenateUpgradeable
 {
     uint256 private _votingDelay;
     uint256 private _votingPeriod;
@@ -29,19 +29,19 @@ abstract contract ChancelorSettingsUpgradeable is
     /**
      * @dev Initialize the governance parameters.
      */
-    function __ChancelorSettings_init(
+    function __SenateSettings_init(
         uint256 initialVotingDelay,
         uint256 initialVotingPeriod,
         uint256 initialProposalThreshold
     ) internal onlyInitializing {
-        __ChancelorSettings_init_unchained(
+        __SenateSettings_init_unchained(
             initialVotingDelay,
             initialVotingPeriod,
             initialProposalThreshold
         );
     }
 
-    function __ChancelorSettings_init_unchained(
+    function __SenateSettings_init_unchained(
         uint256 initialVotingDelay,
         uint256 initialVotingPeriod,
         uint256 initialProposalThreshold
@@ -76,6 +76,20 @@ abstract contract ChancelorSettingsUpgradeable is
         returns (uint256)
     {
         return _proposalThreshold;
+    }
+
+    function getSettings()
+        external
+        view
+        virtual
+        override
+        returns (
+            uint256 currProposalThreshold,
+            uint256 currVotingDelay,
+            uint256 currVotingPeriod
+        )
+    {
+        return (_proposalThreshold, _votingDelay, _votingPeriod);
     }
 
     /**

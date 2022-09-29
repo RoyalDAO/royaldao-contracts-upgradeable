@@ -10,6 +10,7 @@ import "@openzeppelin/hardhat-upgrades";
 import "hardhat-contract-sizer";
 import * as dotenv from "dotenv";
 import "@nomiclabs/hardhat-web3";
+require("@nomiclabs/hardhat-waffle");
 dotenv.config();
 
 const MAINNET_RPC_URL =
@@ -115,20 +116,14 @@ const config: HardhatUserConfig = {
     },
   },
   solidity: {
-    compilers: [
-      {
-        version: "0.8.16",
-        settings: {
-          viaIR: true,
-          optimizer: {
-            enabled: true,
-            runs: 600,
-          },
-        },
+    version: "0.8.16",
+    settings: {
+      viaIR: true,
+      optimizer: {
+        enabled: true,
+        runs: 600,
       },
-      { version: "0.6.12" },
-      { version: "0.4.19" },
-    ],
+    },
   },
   mocha: {
     timeout: 200000, // 200 seconds max for running tests
