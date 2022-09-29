@@ -142,19 +142,6 @@ abstract contract ChancelorSenateControlUpgradeable is
     }
 
     /**
-     * @dev Check if `account` at a specific `blockNumber` reachs the treshold.
-     */
-    function _checkTresholdReached(address account, uint256 blockNumber)
-        internal
-        view
-        virtual
-        override
-        returns (bool)
-    {
-        return _senate.checkTresholdReached(account, blockNumber);
-    }
-
-    /**
      * @dev This empty reserved space is put in place to allow future versions to add new
      * variables without shifting down storage in the inheritance chain.
      * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps

@@ -10,6 +10,7 @@ import "@openzeppelin/hardhat-upgrades";
 import "hardhat-contract-sizer";
 import * as dotenv from "dotenv";
 import "@nomiclabs/hardhat-web3";
+require("@nomiclabs/hardhat-waffle");
 dotenv.config();
 
 const MAINNET_RPC_URL =
@@ -120,7 +121,7 @@ const config: HardhatUserConfig = {
       viaIR: true,
       optimizer: {
         enabled: true,
-        runs: 1000,
+        runs: 600,
       },
     },
   },

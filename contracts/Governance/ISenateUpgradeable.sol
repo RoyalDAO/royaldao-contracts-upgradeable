@@ -75,6 +75,15 @@ abstract contract ISenateUpgradeable is Initializable, IERC165Upgradeable {
     function quorum(uint256 blockNumber) public view virtual returns (uint256);
 
     /**
+     * @dev Update Senate Voting Books.
+     */
+    function transferVotingUnits(
+        address from,
+        address to,
+        uint256 amount
+    ) external virtual;
+
+    /**
      * @dev This empty reserved space is put in place to allow future versions to add new
      * variables without shifting down storage in the inheritance chain.
      * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps

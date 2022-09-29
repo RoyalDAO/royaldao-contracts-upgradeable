@@ -105,20 +105,10 @@ abstract contract SenateVotesQuorumFractionUpgradeable is
     {
         uint256 totalPastVotes;
 
-        for (uint256 idx = 0; idx < tokens.values().length; idx++) {
-            if (
-                banned.contains(tokens.values()[idx]) ||
-                quarantine[tokens.values()[idx]] >= block.number
-            ) continue;
-
-            if (
-                IERC165Upgradeable(tokens.values()[idx]).supportsInterface(
-                    type(IVotesUpgradeable).interfaceId
-                )
-            )
-                totalPastVotes += IVotesUpgradeable(tokens.values()[idx])
-                    .getPastTotalSupply(blockNumber);
-        }
+        totalPastVotes += getPastTotalSupply(blockNumber);
+        // _delegateCheckpoints[account].getAtProbablyRecentBlock(
+        //   blockNumber
+        //);
 
         return
             (totalPastVotes * quorumNumerator(blockNumber)) /
@@ -138,7 +128,7 @@ abstract contract SenateVotesQuorumFractionUpgradeable is
     function updateQuorumNumerator(uint256 newQuorumNumerator)
         external
         virtual
-        onlyOwner
+        onlyChancelor
     {
         _updateQuorumNumerator(newQuorumNumerator);
     }

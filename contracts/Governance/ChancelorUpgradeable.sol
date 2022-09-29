@@ -107,6 +107,8 @@ abstract contract ChancelorUpgradeable is
         onlyInitializing
     {
         _name = name_;
+
+        __Ownable_init();
     }
 
     /**
@@ -284,15 +286,6 @@ abstract contract ChancelorUpgradeable is
     ) internal view virtual returns (uint256);
 
     /**
-     * @dev Check if `account` at a specific `blockNumber` reachs the treshold.
-     */
-    function _checkTresholdReached(address account, uint256 blockNumber)
-        internal
-        view
-        virtual
-        returns (bool);
-
-    /**
      * @dev Register a vote for `proposalId` by `account` with a given `support`, voting `weight` and voting `params`.
      *
      * Note: Support is generic and can represent various things depending on the voting system used.
@@ -326,15 +319,6 @@ abstract contract ChancelorUpgradeable is
     ) public virtual override returns (uint256) {
         (, uint256 currVotingDelay, uint256 currVotingPeriod) = getSettings();
 
-        //require(
-        //    _checkTresholdReached(_msgSender(), block.number - 1),
-        //    "Chancelor: proposer votes below proposal threshold"
-        //);
-        //require(
-        //    getVotes(_msgSender(), block.number - 1) >= currProposalThreshold,
-        //    "Chancelor: proposer votes below proposal threshold"
-        //);
-
         return
             _propose(
                 targets,
@@ -357,8 +341,10 @@ abstract contract ChancelorUpgradeable is
         uint64 _votingDelay,
         uint64 votingPeriod
     ) private returns (uint256) {
+        (uint256 currProposalThreshold, , ) = getSettings();
+
         require(
-            _checkTresholdReached(_msgSender(), block.number - 1),
+            getVotes(_msgSender(), block.number - 1) >= currProposalThreshold,
             "Chancelor: proposer votes below proposal threshold"
         );
 

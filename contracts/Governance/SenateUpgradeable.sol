@@ -11,9 +11,11 @@ import "@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeab
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/TimersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/draft-EIP712Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import "./ISenateUpgradeable.sol";
+import "../Governance/utils/ISenatorVotesUpgradeable.sol";
 
 /**
  * @dev Extension of {Governor} for voting weight extraction from an {ERC20Votes} token, or since v4.5 an {ERC721Votes} token.
@@ -31,10 +33,15 @@ abstract contract SenateUpgradeable is
     ISenateUpgradeable
 {
     //TODO: Complex votes for single vote by token
+    //TODO: Control representation on proposal (proposer is representing Who?)
+    //TODO: Block execution of proposals representating quarantine members
+    //TODO: Block execution of proposals representating banned members
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     EnumerableSetUpgradeable.AddressSet internal tokens;
+    EnumerableSetUpgradeable.AddressSet internal oldDogsTokens;
     EnumerableSetUpgradeable.AddressSet internal banned;
+
     address internal marshalDeputy;
     address internal chancelor;
 
@@ -59,16 +66,38 @@ abstract contract SenateUpgradeable is
         _;
     }
 
+    modifier ifSenateOpen() {
+        require(
+            tokens.length() > 0 || oldDogsTokens.length() > 0,
+            "SenateUpgradeable::Senate Not Open!"
+        );
+        _;
+    }
+
+    modifier ifSenateClosed() {
+        require(
+            tokens.length() == 0 && oldDogsTokens.length() == 0,
+            "SenateUpgradeable::Senate Already Open!"
+        );
+        _;
+    }
+
+    modifier onlyValidMember() {
+        require(
+            senateMemberStatus(msg.sender) == membershipStatus.ACTIVE_MEMBER,
+            "SenateUpgradeable::Invalid Senate Member"
+        );
+        _;
+    }
+
     function __Senate_init(
         string memory name_,
-        address[] memory _tokens,
         address _marshalDeputy,
         address _chancelor,
         uint256 _quarantinePeriod
     ) internal onlyInitializing {
         __SenateVotes_init_unchained(
             name_,
-            _tokens,
             _marshalDeputy,
             _chancelor,
             _quarantinePeriod
@@ -77,7 +106,6 @@ abstract contract SenateUpgradeable is
 
     function __SenateVotes_init_unchained(
         string memory name_,
-        address[] memory _tokens,
         address _marshalDeputy,
         address _chancelor,
         uint256 _quarantinePeriod
@@ -85,22 +113,35 @@ abstract contract SenateUpgradeable is
         quarantinePeriod = _quarantinePeriod;
         marshalDeputy = _marshalDeputy;
         chancelor = _chancelor;
-
         _name = name_;
 
+        __Ownable_init();
+    }
+
+    function openSenate(address[] memory _tokens)
+        external
+        virtual
+        onlyOwner
+        ifSenateClosed
+    {
         for (uint256 idx = 0; idx < _tokens.length; idx++) {
-            require(
+            if (
+                IERC165Upgradeable(_tokens[idx]).supportsInterface(
+                    type(ISenatorVotesUpgradeable).interfaceId
+                )
+            ) {
+                if (!tokens.contains(_tokens[idx])) tokens.add(_tokens[idx]);
+            } else if (
                 IERC165Upgradeable(_tokens[idx]).supportsInterface(
                     type(IVotesUpgradeable).interfaceId
                 ) ||
-                    IERC165Upgradeable(_tokens[idx]).supportsInterface(
-                        type(IVotes).interfaceId
-                    ),
-                "SenateUpgradeable::Invalid implementation!"
-            );
-
-            if (!tokens.contains(_tokens[idx]))
-                tokens.add(address(_tokens[idx]));
+                IERC165Upgradeable(_tokens[idx]).supportsInterface(
+                    type(IVotes).interfaceId
+                )
+            ) {
+                if (!oldDogsTokens.contains(_tokens[idx]))
+                    oldDogsTokens.add(_tokens[idx]);
+            } else revert("SenateUpgradeable::Invalid implementation!");
         }
     }
 
@@ -128,6 +169,14 @@ abstract contract SenateUpgradeable is
         return "";
     }
 
+    function getNewGang() public view returns (address[] memory) {
+        return tokens.values();
+    }
+
+    function getOldDogs() public view returns (address[] memory) {
+        return oldDogsTokens.values();
+    }
+
     function senateMemberStatus(address _tokenAddress)
         public
         view
@@ -137,12 +186,15 @@ abstract contract SenateUpgradeable is
             return membershipStatus.QUARANTINE_MEMBER;
         } else if (banned.contains(_tokenAddress)) {
             return membershipStatus.BANNED_MEMBER;
-        } else if (tokens.contains(_tokenAddress)) {
+        } else if (
+            tokens.contains(_tokenAddress) ||
+            oldDogsTokens.contains(_tokenAddress)
+        ) {
             return membershipStatus.ACTIVE_MEMBER;
         } else return membershipStatus.NOT_MEMBER;
     }
 
-    function changeMarshalDeputy(address _newMarshalInTown) public onlyOwner {
+    function changeMarshalDeputy(address _newMarshalInTown) public virtual {
         _setNewMarshalDeputy(_newMarshalInTown);
     }
 
@@ -156,19 +208,24 @@ abstract contract SenateUpgradeable is
 
     function _acceptToSenate(address _token) internal {
         require(
-            IERC165Upgradeable(_token).supportsInterface(
-                type(IVotesUpgradeable).interfaceId
-            ) ||
-                IERC165Upgradeable(_token).supportsInterface(
-                    type(IVotes).interfaceId
-                ),
-            "SenateUpgradeable::Invalid implementation!"
-        );
-        require(
             !banned.contains(_token),
             "SenateUpgradeable::Banned are Exiled"
         );
-        if (!tokens.contains(_token)) tokens.add(_token);
+
+        if (
+            IERC165Upgradeable(_token).supportsInterface(
+                type(ISenatorVotesUpgradeable).interfaceId
+            )
+        ) {
+            if (!tokens.contains(_token)) tokens.add(address(_token));
+        } else if (
+            IERC165Upgradeable(_token).supportsInterface(
+                type(IVotesUpgradeable).interfaceId
+            )
+        ) {
+            if (!oldDogsTokens.contains(_token))
+                oldDogsTokens.add(address(_token));
+        } else revert("SenateUpgradeable::Invalid implementation!");
     }
 
     function quarantineFromSenate(address _token) public virtual onlyMartial {
@@ -182,11 +239,6 @@ abstract contract SenateUpgradeable is
     }
 
     function quarantineUntil(address _token) external view returns (uint256) {
-        require(
-            quarantine[_token] >= block.number,
-            "SenateUpgradeable::Not Quarantined"
-        );
-
         return quarantine[_token];
     }
 
@@ -219,30 +271,27 @@ abstract contract SenateUpgradeable is
     ) internal view virtual returns (uint256);
 
     /**
-     * @dev Check if `account` at a specific `blockNumber` reachs the treshold.
-     */
-    function _checkTresholdReached(
-        address account,
-        uint256 blockNumber,
-        uint256 proposalThreshold
-    ) internal view virtual returns (bool);
-
-    /**
-     * @dev Check if `account` at a specific `blockNumber` reachs the treshold.
-     */
-    function checkTresholdReached(address account, uint256 blockNumber)
-        external
-        view
-        virtual
-        returns (bool)
-    {
-        return _checkTresholdReached(account, blockNumber, proposalThreshold());
-    }
-
-    /**
      * @dev Get total voting suply until last block.
      */
     function _getTotalSuply() internal view virtual returns (uint256);
+
+    function getPastTotalSupply(uint256 blockNumber)
+        public
+        view
+        virtual
+        returns (uint256);
+
+    //book functions
+    /**
+     * @dev Transfers, mints, or burns voting units. To register a mint, `from` should be zero. To register a burn, `to`
+     * should be zero. Total supply of voting units will be adjusted with mints and burns.
+     */
+    function _transferVotingUnits(
+        address member,
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual;
 
     /**
      * @dev Get the voting weight of `account` at a specific `blockNumber`, for a vote as described by `params`.
@@ -260,6 +309,17 @@ abstract contract SenateUpgradeable is
      */
     function getTotalSuply() external view virtual returns (uint256) {
         return _getTotalSuply();
+    }
+
+    /**
+     * @dev Update Senate Voting Books.
+     */
+    function transferVotingUnits(
+        address from,
+        address to,
+        uint256 amount
+    ) external virtual override onlyValidMember {
+        _transferVotingUnits(msg.sender, from, to, amount);
     }
 
     function getSettings()
@@ -294,5 +354,5 @@ abstract contract SenateUpgradeable is
      * variables without shifting down storage in the inheritance chain.
      * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
      */
-    uint256[45] private __gap;
+    uint256[42] private __gap;
 }
