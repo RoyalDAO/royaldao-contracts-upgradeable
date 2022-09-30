@@ -1,0 +1,19 @@
+{
+  "name": "@royaldao/contracts-upgradeable",
+  "version": "1.0.15",
+  "description": "Upgradeable Contracts from RoyalDAO",
+  "repository": {
+    "url": "https://github.com/RoyalDAO/royaldao-contracts-upgradeable/",
+    "type": "git"
+  },
+  "keywords": [
+    "Governance",
+    "DAO",
+    "Senate",
+    "NFT"
+  ],
+  "homepage": "https://github.com/RoyalDAO/royaldao-contracts-upgradeable",
+  "bugs": "https://github.com/RoyalDAO/royaldao-contracts-upgradeable/issues",
+  "author": "Vin Rodrigues <rodrigues.mvinicius@gmail.com>",
+  "license": "MIT"
+}
