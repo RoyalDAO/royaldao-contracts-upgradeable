@@ -22,5 +22,8 @@
     "Token/ERC721/extensions/*.sol"
   ],
   "author": "Vin Rodrigues <rodrigues.mvinicius@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@openzeppelin/contracts-upgradeable": "^4.7.3"
+  }
 }
