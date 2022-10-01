@@ -9,7 +9,7 @@ typechain-types
 test
 deploy
 deployments
-contracts-upgradeable/mocks
+contracts/mocks
 scripts
 
 #Hardhat files
