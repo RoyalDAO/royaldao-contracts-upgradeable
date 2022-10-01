@@ -1,0 +1,29 @@
+{
+  "name": "@royaldao/contracts-upgradeable",
+  "version": "1.0.19",
+  "description": "Upgradeable Contracts from RoyalDAO",
+  "repository": {
+    "url": "https://github.com/RoyalDAO/royaldao-contracts-upgradeable/",
+    "type": "git"
+  },
+  "keywords": [
+    "Governance",
+    "DAO",
+    "Senate",
+    "NFT"
+  ],
+  "homepage": "https://github.com/RoyalDAO/royaldao-contracts-upgradeable",
+  "bugs": "https://github.com/RoyalDAO/royaldao-contracts-upgradeable/issues",
+  "files": [
+    "Governance/*.sol",
+    "Governance/compatibility/*.sol",
+    "Governance/extensions/*.sol",
+    "Governance/utils/*.sol",
+    "Token/ERC721/extensions/*.sol"
+  ],
+  "author": "Vin Rodrigues <rodrigues.mvinicius@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@openzeppelin/contracts-upgradeable": "^4.7.3"
+  }
+}

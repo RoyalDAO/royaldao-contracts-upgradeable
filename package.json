@@ -1,6 +1,6 @@
 {
-  "name": "@royaldao/royaldao-contract-upgradeable",
-  "version": "1.0.10",
+  "name": "@royaldao/contracts-upgradeable",
+  "version": "1.0.13",
   "description": "Upgradeable Contracts from RoyalDAO",
   "repository": {
     "url": "https://github.com/RoyalDAO/royaldao-contracts-upgradeable/",
@@ -17,7 +17,9 @@
   "files": [
     "contracts/Governance/*.sol",
     "contracts/Governance/compatibility/*.sol",
-    "contracts/Governance/extensions/*.sol"
+    "contracts/Governance/extensions/*.sol",
+    "contracts/Governance/utils/*.sol",
+    "contracts/Token/ERC721/extensions/*.sol"
   ],
   "author": "Vin Rodrigues <rodrigues.mvinicius@gmail.com>",
   "license": "MIT",
