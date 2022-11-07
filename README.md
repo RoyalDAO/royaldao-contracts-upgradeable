@@ -1,5 +1,6 @@
 # <img src="https://github.com/RoyalDAO/royaldao-contracts-upgradeable/blob/RELEASES/assets/images/RoyalDAO_Logo.png" alt="RoyalDao" height="80px">
 
+[![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://royaldao.gitbook.io/royaldao-contracts/)
 [![NPM Package](https://img.shields.io/npm/v/@royaldao/contracts-upgradeable.svg)](https://www.npmjs.org/package/@royaldao/contracts-upgradeable)
 
 This repository hosts the Upgradeable variant of [RoyalDao Contracts](https://github.com/RoyalDAO/royaldao-contracts), meant for use in upgradeable contracts. This variant is available as separate package called `@royaldao/contracts-upgradeable`.
@@ -66,7 +67,7 @@ I urge you to take a look at [OpenZeppelins Knowledge base](https://docs.openzep
 
 This project is maintained by [me mostly](https://github.com/rodriguesmvinicius), and developed following my questionable standard for code quality and security. So ,PLEASE, use common sense when doing anything that deals with real money! I take no responsibility for your implementation decisions and any security problems you might experience.
 
-As soon i can leverage some funds from sponsorship (request pending approval from githubsponsors platform) i intend to audit everything, but 'till there, if you find any vulnerability, please contract us through security e-mail [sec.royaldao@gmail.com](mailto:sec.royaldao@gmail.com).
+As soon i can leverage some funds from sponsorship (you can sponsor me through [Github Sponsor](https://github.com/sponsors/rodriguesmvinicius?o=esb) and [BuyMeACoffee](https://www.buymeacoffee.com/vinrodrigues)) i intend to audit everything, but 'till there, if you find any vulnerability, please contract us through security e-mail [sec.royaldao@gmail.com](mailto:sec.royaldao@gmail.com).
 
 ## Contribute
 
