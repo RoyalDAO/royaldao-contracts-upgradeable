@@ -49,7 +49,7 @@ The package replicates the structure of the main RoyalDao Contracts package, but
 +import "@royaldao/contracts-upgradeable/Governance/ChancellorUpgradeable.sol";
  
 -contract RepublicChancelor is Chancellor {
-+contract UpgradeableRepublicChancelor is ChancellorUpgradeable {
++contract UpgradeableRepublicChancellor is ChancellorUpgradeable {
 ```
 
 If you're new to smart contract development, i strongly recomend all the content made by [Sir Patrick Collins](https://www.youtube.com/c/PatrickCollins), but specially his [36h Course](https://www.youtube.com/watch?v=gyMwXuJrbJQ)...i swear it's woth it!
