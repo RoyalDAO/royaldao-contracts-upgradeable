@@ -45,11 +45,11 @@ $ yarn add @royaldao/contracts-upgradeable
 The package replicates the structure of the main RoyalDao Contracts package, but every file and contract has the suffix `Upgradeable`.
 
 ```diff
--import "@royaldao/contracts/Governance/Chancelor.sol";
-+import "@royaldao/contracts-upgradeable/Governance/ChancelorUpgradeable.sol";
+-import "@royaldao/contracts/Governance/Chancellor.sol";
++import "@royaldao/contracts-upgradeable/Governance/ChancellorUpgradeable.sol";
  
--contract RepublicChancelor is Chancelor {
-+contract UpgradeableRepublicChancelor is ChancelorUpgradeable {
+-contract RepublicChancelor is Chancellor {
++contract UpgradeableRepublicChancelor is ChancellorUpgradeable {
 ```
 
 If you're new to smart contract development, i strongly recomend all the content made by [Sir Patrick Collins](https://www.youtube.com/c/PatrickCollins), but specially his [36h Course](https://www.youtube.com/watch?v=gyMwXuJrbJQ)...i swear it's woth it!
