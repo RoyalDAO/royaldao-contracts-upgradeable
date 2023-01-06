@@ -16,20 +16,6 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * Modified by QueenE DAO.
  */
 abstract contract ISenateUpgradeable is Initializable, IERC165Upgradeable {
-    function __ISenate_init(
-        string memory name_,
-        address[] memory _tokens,
-        address _marshalDeputy,
-        uint256 _quarantinePeriod
-    ) internal onlyInitializing {}
-
-    function __ISenate_init_unchained(
-        string memory name_,
-        address[] memory _tokens,
-        address _marshalDeputy,
-        uint256 _quarantinePeriod
-    ) internal onlyInitializing {}
-
     enum membershipStatus {
         NOT_MEMBER,
         ACTIVE_MEMBER,
@@ -37,17 +23,86 @@ abstract contract ISenateUpgradeable is Initializable, IERC165Upgradeable {
         BANNED_MEMBER
     }
 
+    enum senateSenatorStatus {
+        NOT_SENATOR,
+        ACTIVE_SENATOR,
+        QUARANTINE_SENATOR,
+        BANNED_SENATOR
+    }
+
     /**
      * @notice module:core
-     * @dev Name of the governor instance (used in building the ERC712 domain separator).
+     * @dev Open Senate with initial Members. Initial Members don't need to pass through Senate approval process. They are the founders members.
+     */
+    function openSenate(address[] memory _tokens) public virtual;
+
+    /**
+     * @dev Update Senate Voting Books.
+     */
+    function transferVotingUnits(
+        address from,
+        address to,
+        uint256 amount,
+        bool isSenator,
+        bool updateTotalSupply
+    ) external virtual;
+
+    /**
+     * @dev Check if all members from list are valid.
+     */
+    function validateMembers(bytes calldata members)
+        external
+        view
+        virtual
+        returns (bool);
+
+    /**
+     * @dev Check if senator is active and able to participate in the Senate.
+     */
+    function validateSenator(address senator)
+        external
+        view
+        virtual
+        returns (bool);
+
+    /**
+     * @dev Get the current senator representation list in bytes.
+     */
+    function getRepresentation(address account)
+        external
+        view
+        virtual
+        returns (bytes memory);
+
+    /**
+     * @notice module:core
+     * @dev Name of the senate instance (used in building the ERC712 domain separator).
      */
     function name() public view virtual returns (string memory);
 
     /**
      * @notice module:core
-     * @dev Version of the governor instance (used in building the ERC712 domain separator). Default: "1"
+     * @dev Version of the senate instance (used in building the ERC712 domain separator). Default: "1"
      */
     function version() public view virtual returns (string memory);
+
+    /**
+     * @dev get senate member status
+     */
+    function senateMemberStatus(address _tokenAddress)
+        public
+        view
+        virtual
+        returns (membershipStatus);
+
+    /**
+     * @dev get senator status
+     */
+    function senatorStatus(address _senator)
+        public
+        view
+        virtual
+        returns (senateSenatorStatus);
 
     /**
      * @notice module:user-config
@@ -73,15 +128,6 @@ abstract contract ISenateUpgradeable is Initializable, IERC165Upgradeable {
      * quorum depending on values such as the totalSupply of a token at this block (see {ERC20Votes}).
      */
     function quorum(uint256 blockNumber) public view virtual returns (uint256);
-
-    /**
-     * @dev Update Senate Voting Books.
-     */
-    function transferVotingUnits(
-        address from,
-        address to,
-        uint256 amount
-    ) external virtual;
 
     /**
      * @dev This empty reserved space is put in place to allow future versions to add new

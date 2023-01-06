@@ -3,18 +3,18 @@
 
 pragma solidity ^0.8.0;
 
-import "../ChancelorUpgradeable.sol";
+import "../ChancellorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 
 /**
- * @dev Extension of {Chancelor} for settings updatable through governance.
+ * @dev Extension of {Chancellor} for settings updatable through governance.
  *
  * _Available since v4.4._
  */
 abstract contract SenateComplexSettingsUpgradeable is
     Initializable,
-    ChancelorUpgradeable
+    ChancellorUpgradeable
 {
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
@@ -48,13 +48,13 @@ abstract contract SenateComplexSettingsUpgradeable is
     /**
      * @dev Initialize the governance parameters.
      */
-    function __ChancelorComplexSettings_init(
+    function __ChancellorComplexSettings_init(
         ProposalType[] memory _proposalTypes
     ) internal onlyInitializing {
-        __ChancelorComplexSettings_init_unchained(_proposalTypes);
+        __ChancellorComplexSettings_init_unchained(_proposalTypes);
     }
 
-    function __ChancelorComplexSettings_init_unchained(
+    function __ChancellorComplexSettings_init_unchained(
         ProposalType[] memory _proposalTypes
     ) internal onlyInitializing {
         for (uint256 idx = 0; idx < _proposalTypes.length; idx++) {
@@ -64,7 +64,7 @@ abstract contract SenateComplexSettingsUpgradeable is
     }
 
     /**
-     * @dev See {IChancelor-votingDelay}.
+     * @dev See {IChancellor-votingDelay}.
      */
     function votingDelay() public view virtual override returns (uint256) {
         require(_typeIdCounter.current() > 0, "No Proposal Types created!");
@@ -73,7 +73,7 @@ abstract contract SenateComplexSettingsUpgradeable is
     }
 
     /**
-     * @dev See {IChancelor-votingDelay}.
+     * @dev See {IChancellor-votingDelay}.
      */
     /*function votingDelayOfType(uint256 _typeId)
         public
@@ -90,7 +90,7 @@ abstract contract SenateComplexSettingsUpgradeable is
     }*/
 
     /**
-     * @dev See {IChancelor-votingPeriod}.
+     * @dev See {IChancellor-votingPeriod}.
      */
     function votingPeriod() public view virtual override returns (uint256) {
         require(_typeIdCounter.current() > 0, "No Proposal Types created!");
@@ -99,7 +99,7 @@ abstract contract SenateComplexSettingsUpgradeable is
     }
 
     /**
-     * @dev See {IChancelor-votingPeriod}.
+     * @dev See {IChancellor-votingPeriod}.
      */
     /*function votingPeriodOfType(uint256 _typeId)
         public
@@ -116,7 +116,7 @@ abstract contract SenateComplexSettingsUpgradeable is
     }*/
 
     /**
-     * @dev See {Chancelor-proposalThreshold}.
+     * @dev See {Chancellor-proposalThreshold}.
      */
     function proposalThreshold()
         public
@@ -130,7 +130,7 @@ abstract contract SenateComplexSettingsUpgradeable is
     }
 
     /**
-     * @dev See {Chancelor-proposalThreshold}.
+     * @dev See {Chancellor-proposalThreshold}.
      */
     /*function proposalThresholdOfType(uint256 _typeId)
         public
@@ -157,7 +157,7 @@ abstract contract SenateComplexSettingsUpgradeable is
         uint256 _votingDelay,
         uint256 _votingPeriod,
         uint256 _proposalThreshold
-    ) public virtual onlyChancelor {
+    ) public virtual onlyChancellor {
         _setProposalType(
             _typeName,
             _votingDelay,
@@ -207,7 +207,7 @@ abstract contract SenateComplexSettingsUpgradeable is
         uint256 _votingDelay,
         uint256 _votingPeriod,
         uint256 _proposalThreshold
-    ) public virtual onlyChancelor {
+    ) public virtual onlyChancellor {
         _updateProposalType(
             _typeId,
             _votingDelay,

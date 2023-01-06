@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts v4.4.1 (governance/extensions/IGovernorTimelock.sol)
+// RoyalDAO Contracts (last updated v1.0.0) (Governance/extensions/IChancellorSenateUpgradeable.sol)
 
 pragma solidity ^0.8.0;
 
-import "../IChancelorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "../IChancellorUpgradeable.sol";
 
 /**
- * @dev Extension of the {IChancelor} for timelock supporting modules.
+ * @dev Extension of the {IChancellorUpgradeable} for senate supporting modules.
  *
- * _Available since v4.3._
+ * _Available since v1.0._
  */
-abstract contract IChancelorSenateUpgradeable is
+abstract contract IChancellorSenateUpgradeable is
     Initializable,
-    IChancelorUpgradeable
+    IChancellorUpgradeable
 {
     function __ISenateTimelock_init() internal onlyInitializing {}
 

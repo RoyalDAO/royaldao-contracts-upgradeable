@@ -1,26 +1,25 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts (last updated v4.5.0) (governance/extensions/GovernorVotesQuorumFraction.sol)
+// RoyalDAO Contracts (last updated v1.0.0) (Governance/extensions/SenateVotesQuorumFractionUpgradeable.sol)
+// Uses OpenZeppelin Contracts and Libraries
 
 pragma solidity ^0.8.0;
 
-import "../SenateUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/CheckpointsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
+import "../SenateUpgradeable.sol";
+import "../../Utils/CheckpointsUpgradeable.sol";
 
 /**
- * @dev Extension of {Chancelor} for voting weight extraction from an {ERC20Votes} token and a quorum expressed as a
+ * @dev Extension of {SenateUpgradeable} for voting weight extraction from an {ERC721SenatorVotesUpgradeable/ERC721VotesUpgradeable} token and a quorum expressed as a
  * fraction of the total supply.
  *
- * _Available since v4.3._
+ * _Available since v1.0._
  */
 abstract contract SenateVotesQuorumFractionUpgradeable is
     Initializable,
     SenateUpgradeable
 {
     using CheckpointsUpgradeable for CheckpointsUpgradeable.History;
-    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     uint256 private _quorumNumerator; // DEPRECATED
     CheckpointsUpgradeable.History private _quorumNumeratorHistory;
@@ -122,13 +121,13 @@ abstract contract SenateVotesQuorumFractionUpgradeable is
      *
      * Requirements:
      *
-     * - Must be called through a Chancelor proposal.
+     * - Must be called through a Chancellor proposal.
      * - New numerator must be smaller or equal to the denominator.
      */
     function updateQuorumNumerator(uint256 newQuorumNumerator)
         external
         virtual
-        onlyChancelor
+        onlyChancellor
     {
         _updateQuorumNumerator(newQuorumNumerator);
     }
@@ -148,7 +147,7 @@ abstract contract SenateVotesQuorumFractionUpgradeable is
     {
         require(
             newQuorumNumerator <= quorumDenominator(),
-            "ChancelorVotesQuorumFraction: quorumNumerator over quorumDenominator"
+            "ChancellorVotesQuorumFraction: quorumNumerator over quorumDenominator"
         );
 
         uint256 oldQuorumNumerator = quorumNumerator();

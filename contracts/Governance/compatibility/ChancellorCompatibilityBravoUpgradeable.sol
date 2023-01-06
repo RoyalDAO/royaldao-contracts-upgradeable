@@ -1,33 +1,40 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts (last updated v4.6.0) (governance/compatibility/GovernorCompatibilityBravo.sol)
+// RoyalDAO Contracts (last updated v1.0.0) (Governance/extensions/ChancelorCompatibilityBravoUpgradeable.sol)
+// Uses OpenZeppelin Contracts and Libraries
 
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
-import "../extensions/IChancelorTimelockUpgradeable.sol";
-import "../ChancelorUpgradeable.sol";
-import "./IChancelorCompatibilityBravoUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "./IChancellorCompatibilityBravoUpgradeable.sol";
+import "../extensions/IChancellorTimelockUpgradeable.sol";
+import "../ChancellorUpgradeable.sol";
 
 /**
+ 
  * @dev Compatibility layer that implements GovernorBravo compatibility on to of {Chancelor}.
  *
- * This compatibility layer includes a voting system and requires a {IChancelorTimelock} compatible module to be added
+ * This compatibility layer includes a voting system and requires a {IChancelorTimelockUpgradeable} compatible module to be added
  * through inheritance. It does not include token bindings, not does it include any variable upgrade patterns.
+ *
+ * ChancelorCompatibilityBravoUpgradeable.sol modifies OpenZeppelin's GovernorCompatibilityBravoUpgradeable.sol:
+ * https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/governance/compatibility/GovernorCompatibilityBravoUpgradeable.sol
+ * GovernorCompatibilityBravoUpgradeable.sol source code copyright OpenZeppelin licensed under the MIT License.
+ * Modified by RoyalDAO.
  *
  * NOTE: When using this module, you may need to enable the Solidity optimizer to avoid hitting the contract size limit.
  *
- * _Available since v4.3._
+ * _Available since v1.0._
  */
-abstract contract ChancelorCompatibilityBravoUpgradeable is
+abstract contract ChancellorCompatibilityBravoUpgradeable is
     Initializable,
-    IChancelorTimelockUpgradeable,
-    IChancelorCompatibilityBravoUpgradeable,
-    ChancelorUpgradeable
+    IChancellorTimelockUpgradeable,
+    IChancellorCompatibilityBravoUpgradeable,
+    ChancellorUpgradeable
 {
-    function __ChancelorCompatibilityBravo_init() internal onlyInitializing {}
+    function __ChancellorCompatibilityBravo_init() internal onlyInitializing {}
 
-    function __ChancelorCompatibilityBravo_init_unchained()
+    function __ChancellorCompatibilityBravo_init_unchained()
         internal
         onlyInitializing
     {}
@@ -66,7 +73,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
 
     // ============================================== Proposal lifecycle ==============================================
     /**
-     * @dev See {IGovernor-propose}.
+     * @dev See {IChancellorUpgradeable-propose}.
      */
     function propose(
         address[] memory targets,
@@ -76,7 +83,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
     )
         public
         virtual
-        override(IChancelorUpgradeable, ChancelorUpgradeable)
+        override(IChancellorUpgradeable, ChancellorUpgradeable)
         returns (uint256)
     {
         _storeProposal(
@@ -91,7 +98,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
     }
 
     /**
-     * @dev See {IGovernorCompatibilityBravo-propose}.
+     * @dev See {IChancellorCompatibilityBravoUpgradeable-propose}.
      */
     function propose(
         address[] memory targets,
@@ -118,7 +125,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
     }
 
     /**
-     * @dev See {IGovernorCompatibilityBravo-queue}.
+     * @dev See {IChancellorCompatibilityBravoUpgradeable-queue}.
      */
     function queue(uint256 proposalId) public virtual override {
         ProposalDetails storage details = _proposalDetails[proposalId];
@@ -131,7 +138,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
     }
 
     /**
-     * @dev See {IGovernorCompatibilityBravo-execute}.
+     * @dev See {IChancellorCompatibilityBravoUpgradeable-execute}.
      */
     function execute(uint256 proposalId) public payable virtual override {
         ProposalDetails storage details = _proposalDetails[proposalId];
@@ -214,7 +221,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
 
     // ==================================================== Views =====================================================
     /**
-     * @dev See {IGovernorCompatibilityBravo-proposals}.
+     * @dev See {IChancellorCompatibilityBravoUpgradeable-proposals}.
      */
     function proposals(uint256 proposalId)
         public
@@ -251,7 +258,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
     }
 
     /**
-     * @dev See {IGovernorCompatibilityBravo-getActions}.
+     * @dev See {IChancellorCompatibilityBravoUpgradeable-getActions}.
      */
     function getActions(uint256 proposalId)
         public
@@ -275,7 +282,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
     }
 
     /**
-     * @dev See {IGovernorCompatibilityBravo-getReceipt}.
+     * @dev See {IChancellorCompatibilityBravoUpgradeable-getReceipt}.
      */
     function getReceipt(uint256 proposalId, address voter)
         public
@@ -288,7 +295,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
     }
 
     /**
-     * @dev See {IGovernorCompatibilityBravo-quorumVotes}.
+     * @dev See {IChancellorCompatibilityBravoUpgradeable-quorumVotes}.
      */
     function quorumVotes() public view virtual override returns (uint256) {
         return quorum(block.number - 1);
@@ -296,7 +303,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
 
     // ==================================================== Voting ====================================================
     /**
-     * @dev See {IGovernor-hasVoted}.
+     * @dev See {IChancellorUpgradeable-hasVoted}.
      */
     function hasVoted(uint256 proposalId, address account)
         public
@@ -309,7 +316,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
     }
 
     /**
-     * @dev See {Governor-_quorumReached}. In this module, only forVotes count toward the quorum.
+     * @dev See {ChancellorUpgradeable-_quorumReached}. In this module, only forVotes count toward the quorum.
      */
     function _quorumReached(uint256 proposalId)
         internal
@@ -323,7 +330,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
     }
 
     /**
-     * @dev See {Governor-_voteSucceeded}. In this module, the forVotes must be scritly over the againstVotes.
+     * @dev See {ChancellorUpgradeable-_voteSucceeded}. In this module, the forVotes must be scritly over the againstVotes.
      */
     function _voteSucceeded(uint256 proposalId)
         internal
@@ -337,7 +344,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
     }
 
     /**
-     * @dev See {Governor-_countVote}. In this module, the support follows Governor Bravo.
+     * @dev See {ChancellorUpgradeable-_countVote}. In this module, the support follows Governor Bravo.
      */
     function _countVote(
         uint256 proposalId,
@@ -351,7 +358,7 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
 
         require(
             !receipt.hasVoted,
-            "GovernorCompatibilityBravo: vote already cast"
+            "ChancellorCompatibilityBravoUpgradeable: vote already cast"
         );
         receipt.hasVoted = true;
         receipt.support = support;
@@ -364,7 +371,9 @@ abstract contract ChancelorCompatibilityBravoUpgradeable is
         } else if (support == uint8(VoteType.Abstain)) {
             details.abstainVotes += weight;
         } else {
-            revert("GovernorCompatibilityBravo: invalid vote type");
+            revert(
+                "ChancellorCompatibilityBravoUpgradeable: invalid vote type"
+            );
         }
     }
 

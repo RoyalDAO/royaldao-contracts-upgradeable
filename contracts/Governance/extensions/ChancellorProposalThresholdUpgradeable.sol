@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../ChancelorUpgradeable.sol";
+import "../ChancellorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
@@ -12,13 +12,13 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * _Available since v4.3._
  * _Deprecated since v4.4._
  */
-abstract contract ChancelorProposalThresholdUpgradeable is
+abstract contract ChancellorProposalThresholdUpgradeable is
     Initializable,
-    ChancelorUpgradeable
+    ChancellorUpgradeable
 {
-    function __ChancelorProposalThreshold_init() internal onlyInitializing {}
+    function __ChancellorProposalThreshold_init() internal onlyInitializing {}
 
-    function __ChancelorProposalThreshold_init_unchained()
+    function __ChancellorProposalThreshold_init_unchained()
         internal
         onlyInitializing
     {}
