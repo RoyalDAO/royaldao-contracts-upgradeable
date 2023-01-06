@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.6.0) (governance/utils/Votes.sol)
+// RoyalDAO Contracts (last updated v1.1.2) (Governance/SenatorVotesUpgradeable.sol)
+
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
@@ -354,6 +356,7 @@ abstract contract SenatorVotesUpgradeable is
 
     /**
      * @dev Set senate address.
+     * @dev Its advised to override for access control
      */
     function setSenate(ISenateUpgradeable _senate) external virtual {
         _setSenate(_senate);
