@@ -3,20 +3,26 @@
 
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "../../../Governance/utils/SenatorVotesUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "../../../Governance/utils/ISenatorVotesUpgradeable.sol";
 import "../../../Governance/ISenateUpgradeable.sol";
 
 /**
- * @dev Extension of ERC721 to support voting and delegation as implemented by {Votes}, where each individual NFT counts
+ * @dev Extension of Openzeppelin's {ERC721Upgradeable} to support voting and delegation as implemented by {SenatorVotesUpgradeable}, where each individual NFT counts
  * as 1 vote unit.
  *
- * Tokens do not count as votes until they are delegated, because votes must be tracked which incurs an additional cost
- * on every transfer. Token holders can either delegate to a trusted representative who will decide how to make use of
- * the votes in governance decisions, or they can delegate to themselves to be their own representative.
+ * ERC721SenatorVotes.sol modifies OpenZeppelin's ERC721Votes.sol:
+ * https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/token/ERC721/extensions/ERC721VotesUpgradeable.sol
+ * ERC721VotesUpgradeable.sol source code copyright OpenZeppelin licensed under the MIT License.
+ * Modified by RoyalDAO.
  *
- * _Available since v4.5._
+ * CHANGES: - Adapted to work with the {SenateUpgradeable}, informing support of {ISenatorVotesUpgradeable} interface so the senate can recognize 
+              the token voting control implementation type.
+            - Inheritage of SenatorVotes pattern
+            
+ * _Available since v1.0._
  */
 abstract contract ERC721SenatorVotesUpgradeable is
     Initializable,
@@ -63,6 +69,18 @@ abstract contract ERC721SenatorVotesUpgradeable is
         returns (uint256)
     {
         return balanceOf(account);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override
+        returns (bool)
+    {
+        return
+            interfaceId == type(ISenatorVotesUpgradeable).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /**

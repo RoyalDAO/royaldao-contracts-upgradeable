@@ -6,29 +6,29 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/draft-EIP712Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import "./ISenatorVotesUpgradeable.sol";
 import "../../Governance/ISenateUpgradeable.sol";
 import "../../Utils/CheckpointsUpgradeable.sol";
 
 /**
- * @dev This is a base abstract contract that tracks voting units, which are a measure of voting power that can be
- * transferred, and provides a system of vote delegation, where an account can delegate its voting units to a sort of
- * "representative" that will pool delegated voting units from different accounts and can then use it to vote in
- * decisions. In fact, voting units _must_ be delegated in order to count as actual votes, and an account has to
- * delegate those votes to itself if it wishes to participate in decisions and does not have a trusted representative.
+ * @dev Extension of ERC721Upgradeable to support voting and delegation as implemented by {SenatorVotesUpgradeable}, where each individual NFT counts
+ * as 1 vote unit.
  *
- * This contract is often combined with a token contract such that voting units correspond to token units. For an
- * example, see {ERC721Votes}.
+ * Tokens do not count as votes until they are delegated, because votes must be tracked which incurs an additional cost
+ * on every transfer. Token holders can either delegate to a trusted representative who will decide how to make use of
+ * the votes in governance decisions, or they can delegate to themselves to be their own representative.
  *
- * The full history of delegate votes is tracked on-chain so that governance protocols can consider votes as distributed
- * at a particular block number to protect against flash loans and double voting. The opt-in delegate system makes the
- * cost of this history tracking optional.
+ * SenatorVotesUpgradeable.sol modifies OpenZeppelin's VotesUpgradeable.sol:
+ * https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/governance/utils/VotesUpgradeable.sol
+ * VotesUpgradeable.sol source code copyright OpenZeppelin licensed under the MIT License.
+ * Modified by RoyalDAO.
  *
- * When using this module the derived contract must implement {_getVotingUnits} (for example, make it return
- * {ERC721-balanceOf}), and can use {_transferVotingUnits} to track a change in the distribution of those units (in the
- * previous example, it would be included in {ERC721-_beforeTokenTransfer}).
+ * CHANGES: - Adapted to work with the {SenateUpgradeable}, sending an aditional move of delegated vote to the {SenateUpgradeable} that the token is part of (if any)
+ *          - Keeps a list of current senators (holders) to allow a full snapshot in the case of a late {SenateUpgradeable} Participation
+            - Allow the setup of senate and posible change of senate (senate leave and senate change scenarios)
  *
- * _Available since v4.5._
+ * _Available since v1.0._
  */
 abstract contract SenatorVotesUpgradeable is
     Initializable,
@@ -36,6 +36,24 @@ abstract contract SenatorVotesUpgradeable is
     ContextUpgradeable,
     EIP712Upgradeable
 {
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
+    using CheckpointsUpgradeable for CheckpointsUpgradeable.History;
+    using CountersUpgradeable for CountersUpgradeable.Counter;
+
+    bytes32 private constant _DELEGATION_TYPEHASH =
+        keccak256("Delegation(address delegatee,uint256 nonce,uint256 expiry)");
+
+    ISenateUpgradeable public senate;
+
+    mapping(address => address) private _delegation;
+    mapping(address => CheckpointsUpgradeable.History)
+        private _delegateCheckpoints;
+    CheckpointsUpgradeable.History private _totalCheckpoints;
+
+    mapping(address => CountersUpgradeable.Counter) private _nonces;
+
+    EnumerableSetUpgradeable.AddressSet internal senators;
+
     function __Votes_init(ISenateUpgradeable _senate)
         internal
         onlyInitializing
@@ -49,21 +67,6 @@ abstract contract SenatorVotesUpgradeable is
     {
         senate = _senate;
     }
-
-    using CheckpointsUpgradeable for CheckpointsUpgradeable.History;
-    using CountersUpgradeable for CountersUpgradeable.Counter;
-
-    ISenateUpgradeable public senate;
-
-    bytes32 private constant _DELEGATION_TYPEHASH =
-        keccak256("Delegation(address delegatee,uint256 nonce,uint256 expiry)");
-
-    mapping(address => address) private _delegation;
-    mapping(address => CheckpointsUpgradeable.History)
-        private _delegateCheckpoints;
-    CheckpointsUpgradeable.History private _totalCheckpoints;
-
-    mapping(address => CountersUpgradeable.Counter) private _nonces;
 
     /**
      * @dev Returns the current amount of votes that `account` has.
@@ -182,12 +185,29 @@ abstract contract SenatorVotesUpgradeable is
         _delegation[account] = delegatee;
 
         emit DelegateChanged(account, oldDelegate, delegatee);
-        _moveDelegateVotes(oldDelegate, delegatee, _getVotingUnits(account));
+
+        bool fromStillSenator = _moveDelegateVotes(
+            oldDelegate,
+            delegatee,
+            _getVotingUnits(account)
+        );
+
+        //update senate books
+        if (address(senate) != address(0))
+            senate.transferVotingUnits(
+                oldDelegate,
+                delegatee,
+                _getVotingUnits(account),
+                fromStillSenator,
+                false
+            );
     }
 
     /**
      * @dev Transfers, mints, or burns voting units. To register a mint, `from` should be zero. To register a burn, `to`
      * should be zero. Total supply of voting units will be adjusted with mints and burns.
+     *
+     * NOTE If tokens participates in a Senate, an external call to the Senate contract is made to update the Senate Books updated.
      */
     function _transferVotingUnits(
         address from,
@@ -200,31 +220,56 @@ abstract contract SenatorVotesUpgradeable is
         if (to == address(0)) {
             _totalCheckpoints.push(_subtract, amount);
         }
-        _moveDelegateVotes(delegates(from), delegates(to), amount);
+
+        bool fromStillSenator = _moveDelegateVotes(
+            delegates(from),
+            delegates(to),
+            amount
+        );
+
+        //update senate books
+        if (address(senate) != address(0))
+            senate.transferVotingUnits(
+                from,
+                to,
+                amount,
+                fromStillSenator,
+                true
+            );
     }
 
     /**
      * @dev Moves delegated votes from one delegate to another.
+     *
+     * NOTE if `from` keeps no voting power and is in Senator list, removes it
+     *      `to` is inserted as senator if its not already
      */
     function _moveDelegateVotes(
         address from,
         address to,
         uint256 amount
-    ) private {
+    ) private returns (bool fromStillSenator) {
         if (from != to && amount > 0) {
             if (from != address(0)) {
                 (uint256 oldValue, uint256 newValue) = _delegateCheckpoints[
                     from
                 ].push(_subtract, amount);
+
+                fromStillSenator = newValue > 0;
+                if (senators.contains(from) && newValue <= 0)
+                    senators.remove(from);
+
                 emit DelegateVotesChanged(from, oldValue, newValue);
             }
             if (to != address(0)) {
                 (uint256 oldValue, uint256 newValue) = _delegateCheckpoints[to]
                     .push(_add, amount);
+
+                if (!senators.contains(from) && newValue > 0)
+                    senators.add(from);
+
                 emit DelegateVotesChanged(to, oldValue, newValue);
             }
-            //update senate books
-            senate.transferVotingUnits(from, to, amount);
         }
     }
 
@@ -279,9 +324,66 @@ abstract contract SenatorVotesUpgradeable is
     }
 
     /**
+     * @dev Returns snapshot of senator votes
+     */
+    function getSenateSnapshot()
+        external
+        view
+        returns (senateSnapshot[] memory)
+    {
+        senateSnapshot[] memory snapshot = new senateSnapshot[](
+            senators.length()
+        );
+
+        for (uint256 idx = 0; idx < senators.length(); idx++) {
+            snapshot[idx] = senateSnapshot({
+                senator: senators.at(idx),
+                votes: _delegateCheckpoints[senators.at(idx)].latest()
+            });
+        }
+
+        return snapshot;
+    }
+
+    /**
+     * @dev Returns current voting suply
+     */
+    function getTotalSupply() external view override returns (uint256) {
+        return _getTotalSupply();
+    }
+
+    /**
+     * @dev Set senate address.
+     */
+    function setSenate(ISenateUpgradeable _senate) external virtual {
+        _setSenate(_senate);
+    }
+
+    /**
+     * @dev Set senate address.
+     *
+     * NOTE If member wants to change to another senate or even to no senate at all, first it must be deactivated from current senate
+     *
+     */
+    function _setSenate(ISenateUpgradeable _senate) internal virtual {
+        if (address(senate) != address(0))
+            require(
+                uint256(senate.senateMemberStatus(address(_senate))) !=
+                    uint256(membershipStatus.ACTIVE_MEMBER),
+                "SenatorVotes::Current active in Senate"
+            );
+
+        address oldSenate = address(senate);
+
+        senate = _senate;
+
+        emit SenateChanged(oldSenate, address(senate));
+    }
+
+    /**
      * @dev This empty reserved space is put in place to allow future versions to add new
      * variables without shifting down storage in the inheritance chain.
      * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
      */
-    uint256[46] private __gap;
+    uint256[44] private __gap;
 }

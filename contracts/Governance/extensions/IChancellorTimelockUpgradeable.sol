@@ -3,23 +3,30 @@
 
 pragma solidity ^0.8.0;
 
-import "../IChancelorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "../IChancellorUpgradeable.sol";
 
 /**
- * @dev Extension of the {IChancelor} for timelock supporting modules.
+ * @dev Extension of the {IChancellorUpgradeable} for timelock supporting modules.
  *
- * _Available since v4.3._
+ * _Available since V1.0._
  */
-abstract contract IChancelorTimelockUpgradeable is
+abstract contract IChancellorTimelockUpgradeable is
     Initializable,
-    IChancelorUpgradeable
+    IChancellorUpgradeable
 {
     function __IChancelorTimelock_init() internal onlyInitializing {}
 
     function __IChancelorTimelock_init_unchained() internal onlyInitializing {}
 
     event ProposalQueued(uint256 proposalId, uint256 eta);
+
+    function queue(
+        address[] memory targets,
+        uint256[] memory values,
+        bytes[] memory calldatas,
+        bytes32 descriptionHash
+    ) public virtual returns (uint256 proposalId);
 
     function timelock() public view virtual returns (address);
 
@@ -28,13 +35,6 @@ abstract contract IChancelorTimelockUpgradeable is
         view
         virtual
         returns (uint256);
-
-    function queue(
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) public virtual returns (uint256 proposalId);
 
     /**
      * @dev This empty reserved space is put in place to allow future versions to add new

@@ -3,28 +3,28 @@
 
 pragma solidity ^0.8.0;
 
-import "./IChancelorTimelockUpgradeable.sol";
-import "../ChancelorUpgradeable.sol";
+import "./IChancellorTimelockUpgradeable.sol";
+import "../ChancellorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/vendor/compound/ICompoundTimelockUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
- * @dev Extension of {Chancelor} that binds the execution process to a Compound Timelock. This adds a delay, enforced by
- * the external timelock to all successful proposal (in addition to the voting duration). The {Chancelor} needs to be
+ * @dev Extension of {Chancellor} that binds the execution process to a Compound Timelock. This adds a delay, enforced by
+ * the external timelock to all successful proposal (in addition to the voting duration). The {Chancellor} needs to be
  * the admin of the timelock for any operation to be performed. A public, unrestricted,
- * {ChancelorTimelockCompound-__acceptAdmin} is available to accept ownership of the timelock.
+ * {ChancellorTimelockCompound-__acceptAdmin} is available to accept ownership of the timelock.
  *
- * Using this model means the proposal will be operated by the {TimelockController} and not by the {Chancelor}. Thus,
- * the assets and permissions must be attached to the {TimelockController}. Any asset sent to the {Chancelor} will be
+ * Using this model means the proposal will be operated by the {TimelockController} and not by the {Chancellor}. Thus,
+ * the assets and permissions must be attached to the {TimelockController}. Any asset sent to the {Chancellor} will be
  * inaccessible.
  *
  * _Available since v4.3._
  */
-abstract contract ChancelorTimelockCompoundUpgradeable is
+abstract contract ChancellorTimelockCompoundUpgradeable is
     Initializable,
-    IChancelorTimelockUpgradeable,
-    ChancelorUpgradeable
+    IChancellorTimelockUpgradeable,
+    ChancellorUpgradeable
 {
     using SafeCastUpgradeable for uint256;
     using TimersUpgradeable for TimersUpgradeable.Timestamp;
@@ -45,13 +45,13 @@ abstract contract ChancelorTimelockCompoundUpgradeable is
     /**
      * @dev Set the timelock.
      */
-    function __ChancelorTimelockCompound_init(
+    function __ChancellorTimelockCompound_init(
         ICompoundTimelockUpgradeable timelockAddress
     ) internal onlyInitializing {
-        __ChancelorTimelockCompound_init_unchained(timelockAddress);
+        __ChancellorTimelockCompound_init_unchained(timelockAddress);
     }
 
-    function __ChancelorTimelockCompound_init_unchained(
+    function __ChancellorTimelockCompound_init_unchained(
         ICompoundTimelockUpgradeable timelockAddress
     ) internal onlyInitializing {
         _updateTimelock(timelockAddress);
@@ -64,11 +64,11 @@ abstract contract ChancelorTimelockCompoundUpgradeable is
         public
         view
         virtual
-        override(IERC165Upgradeable, ChancelorUpgradeable)
+        override(IERC165Upgradeable, ChancellorUpgradeable)
         returns (bool)
     {
         return
-            interfaceId == type(IChancelorTimelockUpgradeable).interfaceId ||
+            interfaceId == type(IChancellorTimelockUpgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -79,7 +79,7 @@ abstract contract ChancelorTimelockCompoundUpgradeable is
         public
         view
         virtual
-        override(IChancelorUpgradeable, ChancelorUpgradeable)
+        override(IChancellorUpgradeable, ChancellorUpgradeable)
         returns (ProposalState)
     {
         ProposalState status = super.state(proposalId);
@@ -136,7 +136,7 @@ abstract contract ChancelorTimelockCompoundUpgradeable is
 
         require(
             state(proposalId) == ProposalState.Succeeded,
-            "Chancelor: proposal not successful"
+            "Chancellor: proposal not successful"
         );
 
         uint256 eta = block.timestamp + _timelock.delay();
@@ -148,7 +148,7 @@ abstract contract ChancelorTimelockCompoundUpgradeable is
                         abi.encode(targets[i], values[i], "", calldatas[i], eta)
                     )
                 ),
-                "ChancelorTimelockCompound: identical proposal action already queued"
+                "ChancellorTimelockCompound: identical proposal action already queued"
             );
             _timelock.queueTransaction(
                 targets[i],
@@ -175,7 +175,7 @@ abstract contract ChancelorTimelockCompoundUpgradeable is
         bytes32 /*descriptionHash*/
     ) internal virtual override {
         uint256 eta = proposalEta(proposalId);
-        require(eta > 0, "ChancelorTimelockCompound: proposal not yet queued");
+        require(eta > 0, "ChancellorTimelockCompound: proposal not yet queued");
         AddressUpgradeable.sendValue(payable(_timelock), msg.value);
         for (uint256 i = 0; i < targets.length; ++i) {
             _timelock.executeTransaction(
@@ -253,7 +253,7 @@ abstract contract ChancelorTimelockCompoundUpgradeable is
     function updateTimelock(ICompoundTimelockUpgradeable newTimelock)
         external
         virtual
-        onlyChancelor
+        onlyChancellor
     {
         _updateTimelock(newTimelock);
     }

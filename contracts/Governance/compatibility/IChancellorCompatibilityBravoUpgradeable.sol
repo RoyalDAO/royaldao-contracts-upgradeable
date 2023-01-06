@@ -1,23 +1,23 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts v4.4.1 (governance/compatibility/IGovernorCompatibilityBravo.sol)
+// RoyalDAO Contracts (last updated v1.0.0) (Governance/extensions/IChancellorCompatibilityBravoUpgradeable.sol)
 
 pragma solidity ^0.8.0;
 
-import "../IChancelorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "../IChancellorUpgradeable.sol";
 
 /**
- * @dev Interface extension that adds missing functions to the {Governor} core to provide `GovernorBravo` compatibility.
+ * @dev Interface extension that adds missing functions to the {ChancellorUpgradeable} core to provide `GovernorBravo` compatibility.
  *
- * _Available since v4.3._
+ * _Available since v1.0._
  */
-abstract contract IChancelorCompatibilityBravoUpgradeable is
+abstract contract IChancellorCompatibilityBravoUpgradeable is
     Initializable,
-    IChancelorUpgradeable
+    IChancellorUpgradeable
 {
-    function __IChancelorCompatibilityBravo_init() internal onlyInitializing {}
+    function __IChancellorCompatibilityBravo_init() internal onlyInitializing {}
 
-    function __IChancelorCompatibilityBravo_init_unchained()
+    function __IChancellorCompatibilityBravo_init_unchained()
         internal
         onlyInitializing
     {}
