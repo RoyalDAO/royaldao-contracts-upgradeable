@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.6.0) (governance/extensions/GovernorVotes.sol)
+// RoyalDAO Contracts (last updated v1.1.2) (Governance/utils/SenateUpgradeable.sol)
 
 pragma solidity ^0.8.0;
 
@@ -408,9 +409,12 @@ abstract contract SenateUpgradeable is
                     SafeCastUpgradeable.toUint32(memberCounter.current())
                 ] = _token;
 
-                tokens.add(_token);
                 //must sync senate books
                 writeMemberToSenateBooks(_token);
+                //set senate to new member
+                ISenatorVotesUpgradeable(_token).setSenate(this);
+                //add New Member to Senate List of Members
+                tokens.add(_token);
             }
         } else if (
             IERC165Upgradeable(_token).supportsInterface(
