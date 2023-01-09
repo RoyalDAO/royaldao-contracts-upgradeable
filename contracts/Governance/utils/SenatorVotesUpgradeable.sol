@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.6.0) (governance/utils/Votes.sol)
-// RoyalDAO Contracts (last updated v1.1.2) (Governance/SenatorVotesUpgradeable.sol)
+// RoyalDAO Contracts (last updated v1.1.3) (Governance/SenatorVotesUpgradeable.sol)
 
 pragma solidity ^0.8.0;
 
@@ -267,8 +267,7 @@ abstract contract SenatorVotesUpgradeable is
                 (uint256 oldValue, uint256 newValue) = _delegateCheckpoints[to]
                     .push(_add, amount);
 
-                if (!senators.contains(from) && newValue > 0)
-                    senators.add(from);
+                if (!senators.contains(to) && newValue > 0) senators.add(to);
 
                 emit DelegateVotesChanged(to, oldValue, newValue);
             }
