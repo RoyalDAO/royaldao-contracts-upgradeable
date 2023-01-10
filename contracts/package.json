@@ -1,6 +1,6 @@
 {
   "name": "@royaldao/contracts-upgradeable",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Upgradeable Contracts from RoyalDAO",
   "repository": {
     "url": "https://github.com/RoyalDAO/royaldao-contracts-upgradeable/",

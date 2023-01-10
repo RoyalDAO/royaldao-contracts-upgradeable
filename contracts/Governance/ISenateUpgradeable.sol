@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.7.0) (governance/IGovernor.sol)
+// RoyalDAO Contracts (last updated v1.1.4) (Governance/ISenate.sol)
 
 pragma solidity ^0.8.0;
 
@@ -16,6 +17,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * Modified by QueenE DAO.
  */
 abstract contract ISenateUpgradeable is Initializable, IERC165Upgradeable {
+    event MemberAcceptance(address member, address approveExecutor);
+
     enum membershipStatus {
         NOT_MEMBER,
         ACTIVE_MEMBER,
