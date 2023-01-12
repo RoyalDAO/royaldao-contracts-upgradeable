@@ -314,7 +314,10 @@ abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
     uint256 blockNumber,
     bytes memory /*params*/
   ) internal view virtual override returns (uint256) {
-    if (!_validateSenator(account)) return 0;
+    if (
+      !_validateSenator(account) ||
+      !_validateMembers(_getRepresentation(account))
+    ) return 0;
 
     uint256 totalVotes;
 
