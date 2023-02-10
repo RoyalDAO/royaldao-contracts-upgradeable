@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// RoyalDAO Contracts (last updated v1.1.5) (Governance/extensions/SenateVotesUpgradeable.sol)
+// RoyalDAO Contracts (last updated v1.2.0) (Governance/extensions/SenateVotesUpgradeable.sol)
 /*
  * @title Solidity Bytes Uint Array Management
  *
@@ -88,6 +88,16 @@ library BytesArrayLib32Upgradeable {
 
 library BytesArrayLibAddressUpgradeable {
   using BytesLib for bytes;
+
+  function parse(
+    address[] memory _self
+  ) internal pure returns (bytes memory result) {
+    result = "";
+    for (uint256 idx = 0; idx < _self.length; idx++) {
+      result = insert(result, _self[idx]);
+    }
+    return result;
+  }
 
   function insert(
     bytes memory _self,

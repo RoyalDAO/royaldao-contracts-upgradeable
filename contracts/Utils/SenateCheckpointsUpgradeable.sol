@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
-// RoyalDAO Contracts (last updated v1.1.5) (Governance/extensions/SenateVotesUpgradeable.sol)
+// RoyalDAO Contracts (last updated v1.2.0) (Governance/extensions/SenateVotesUpgradeable.sol)
 
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
+import "../Utils/ArrayBytesUpgradeable.sol";
 
 /**
  * @dev This library defines the `History` struct, for checkpointing values as they change at different points in
@@ -16,12 +17,14 @@ import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
  * Built upon Openzeppelin's CheckpointsUpgradeable, this differ because allows to track checkpoints from different token contracts
  * beeing ideal to be used with the Senate pattern
  * https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/utils/CheckpointsUpgradeable.sol
- * _Available since v1.1.5
+ * _Available since v1.2.0
  */
 library SenateCheckpointsUpgradeable {
+  using BytesArrayLibAddressUpgradeable for bytes;
+
   struct History {
     mapping(address => Checkpoint[]) _checkpoints;
-    Checkpoint[] _totalCheckpoints;
+    address[] trackedContracts;
   }
 
   struct Checkpoint {
@@ -48,19 +51,38 @@ library SenateCheckpointsUpgradeable {
   }
 
   /**
-   * @dev Returns the value at a given block number. If a checkpoint is not available at that block, the closest one
+   * @dev Returns the value of all relevant members at a given block number. If a checkpoint is not available at that block, the closest one
    * before it is returned, or zero otherwise.
    */
   function getAtBlock(
     History storage self,
-    uint256 blockNumber
+    uint256 blockNumber,
+    address[] memory _inaptContracts
   ) internal view returns (uint256) {
     require(blockNumber < block.number, "Checkpoints: block not yet mined");
     uint32 key = SafeCastUpgradeable.toUint32(blockNumber);
 
-    uint256 len = self._totalCheckpoints.length;
-    uint256 pos = _upperBinaryLookup(self._totalCheckpoints, key, 0, len);
-    return pos == 0 ? 0 : _unsafeAccess(self._totalCheckpoints, pos - 1)._value;
+    address[] memory _trackedContracts = self.trackedContracts;
+
+    uint256 totalValue;
+
+    for (uint256 idx = 0; idx < _trackedContracts.length; idx++) {
+      if (contains(_inaptContracts, _trackedContracts[idx])) continue;
+
+      uint256 len = self._checkpoints[_trackedContracts[idx]].length;
+      uint256 pos = _upperBinaryLookup(
+        self._checkpoints[_trackedContracts[idx]],
+        key,
+        0,
+        len
+      );
+      totalValue += pos == 0
+        ? 0
+        : _unsafeAccess(self._checkpoints[_trackedContracts[idx]], pos - 1)
+          ._value;
+    }
+
+    return totalValue;
   }
 
   /**
@@ -98,53 +120,56 @@ library SenateCheckpointsUpgradeable {
   }
 
   /**
-   * @dev Returns the value at a given block number. If a checkpoint is not available at that block, the closest one
+   * @dev Returns the value of all relevant members at a given block number. If a checkpoint is not available at that block, the closest one
    * before it is returned, or zero otherwise. Similar to {upperLookup} but optimized for the case when the searched
    * checkpoint is probably "recent", defined as being among the last sqrt(N) checkpoints where N is the number of
    * checkpoints.
    */
   function getAtProbablyRecentBlock(
     History storage self,
-    uint256 blockNumber
+    uint256 blockNumber,
+    address[] memory _inaptContracts
   ) internal view returns (uint256) {
     require(blockNumber < block.number, "Checkpoints: block not yet mined");
     uint32 key = SafeCastUpgradeable.toUint32(blockNumber);
 
-    uint256 len = self._totalCheckpoints.length;
+    address[] memory _trackedContracts = self.trackedContracts;
+    uint256 totalValue;
 
-    uint256 low = 0;
-    uint256 high = len;
+    for (uint256 idx = 0; idx < _trackedContracts.length; idx++) {
+      if (contains(_inaptContracts, _trackedContracts[idx])) continue;
 
-    if (len > 5) {
-      uint256 mid = len - MathUpgradeable.sqrt(len);
-      if (key < _unsafeAccess(self._totalCheckpoints, mid)._blockNumber) {
-        high = mid;
-      } else {
-        low = mid + 1;
+      address contractAddress = _trackedContracts[idx];
+      uint256 len = self._checkpoints[contractAddress].length;
+
+      uint256 low = 0;
+      uint256 high = len;
+
+      if (len > 5) {
+        uint256 mid = len - MathUpgradeable.sqrt(len);
+        if (
+          key <
+          _unsafeAccess(self._checkpoints[contractAddress], mid)._blockNumber
+        ) {
+          high = mid;
+        } else {
+          low = mid + 1;
+        }
       }
+
+      uint256 pos = _upperBinaryLookup(
+        self._checkpoints[contractAddress],
+        key,
+        low,
+        high
+      );
+
+      totalValue += pos == 0
+        ? 0
+        : _unsafeAccess(self._checkpoints[contractAddress], pos - 1)._value;
     }
 
-    uint256 pos = _upperBinaryLookup(self._totalCheckpoints, key, low, high);
-
-    return pos == 0 ? 0 : _unsafeAccess(self._totalCheckpoints, pos - 1)._value;
-  }
-
-  /**
-   * @dev Pushes a value onto a History so that it is stored as the checkpoint for the current block.
-   *
-   * Returns previous value and new value.
-   */
-  function push(
-    History storage self,
-    uint256 value
-  ) internal returns (uint256, uint256) {
-    //insert in total checkpoints
-    return
-      _insert(
-        self._totalCheckpoints,
-        SafeCastUpgradeable.toUint32(block.number),
-        SafeCastUpgradeable.toUint224(value)
-      );
+    return totalValue;
   }
 
   /**
@@ -157,6 +182,9 @@ library SenateCheckpointsUpgradeable {
     address _token,
     uint256 value
   ) internal returns (uint256, uint256) {
+    if (!contains(self.trackedContracts, _token))
+      self.trackedContracts.push(_token);
+
     return
       _insert(
         self._checkpoints[_token],
@@ -178,9 +206,9 @@ library SenateCheckpointsUpgradeable {
     uint256 delta
   ) internal returns (uint256, uint256) {
     //push to token tracker
-    push(self, _token, op(latest(self, _token), delta));
+    return push(self, _token, op(latest(self, _token), delta));
     //push to total tracker
-    return push(self, op(latest(self), delta));
+    //return push(self, op(latest(self), delta));
   }
 
   /**
@@ -196,11 +224,21 @@ library SenateCheckpointsUpgradeable {
   }
 
   /**
-   * @dev Returns the value in the most recent checkpoint, or zero if there are no checkpoints.
+   * @dev Returns the value of all relevant members in the most recent checkpoint, or zero if there are no checkpoints.
    */
   function latest(History storage self) internal view returns (uint224) {
-    uint256 pos = self._totalCheckpoints.length;
-    return pos == 0 ? 0 : _unsafeAccess(self._totalCheckpoints, pos - 1)._value;
+    address[] memory _trackedContracts = self.trackedContracts;
+    uint224 totalValue;
+
+    for (uint256 idx = 0; idx < _trackedContracts.length; idx++) {
+      uint256 pos = self._checkpoints[_trackedContracts[idx]].length;
+      totalValue += pos == 0
+        ? 0
+        : _unsafeAccess(self._checkpoints[_trackedContracts[idx]], pos - 1)
+          ._value;
+    }
+
+    return totalValue;
   }
 
   /**
@@ -223,20 +261,15 @@ library SenateCheckpointsUpgradeable {
     }
   }
 
-  /**
-   * @dev Returns whether there is a checkpoint in the structure (i.e. it is not empty), and if so the key and value
-   * in the most recent checkpoint.
-   */
-  function latestCheckpoint(
-    History storage self
-  ) internal view returns (bool exists, uint32 _blockNumber, uint224 _value) {
-    uint256 pos = self._totalCheckpoints.length;
-    if (pos == 0) {
-      return (false, 0, 0);
-    } else {
-      Checkpoint memory ckpt = _unsafeAccess(self._totalCheckpoints, pos - 1);
-      return (true, ckpt._blockNumber, ckpt._value);
+  function contains(
+    address[] memory list,
+    address value
+  ) private pure returns (bool) {
+    for (uint256 idx = 0; idx < list.length; idx++) {
+      if (list[idx] == value) return true;
     }
+
+    return false;
   }
 
   /**
@@ -247,13 +280,6 @@ library SenateCheckpointsUpgradeable {
     address _token
   ) internal view returns (uint256) {
     return self._checkpoints[_token].length;
-  }
-
-  /**
-   * @dev Returns the number of checkpoint.
-   */
-  function length(History storage self) internal view returns (uint256) {
-    return self._totalCheckpoints.length;
   }
 
   /**
@@ -345,6 +371,7 @@ library SenateCheckpointsUpgradeable {
 
   struct Trace224 {
     mapping(address => Checkpoint224[]) _checkpoints;
+    address[] trackedContracts;
   }
 
   struct Checkpoint224 {
@@ -363,6 +390,8 @@ library SenateCheckpointsUpgradeable {
     uint32 key,
     uint224 value
   ) internal returns (uint224, uint224) {
+    if (!contains(self.trackedContracts, _token))
+      self.trackedContracts.push(_token);
     return _insert(self._checkpoints[_token], key, value);
   }
 
@@ -525,6 +554,7 @@ library SenateCheckpointsUpgradeable {
 
   struct Trace160 {
     mapping(address => Checkpoint160[]) _checkpoints;
+    address[] trackedContracts;
   }
 
   struct Checkpoint160 {
@@ -543,6 +573,8 @@ library SenateCheckpointsUpgradeable {
     uint96 key,
     uint160 value
   ) internal returns (uint160, uint160) {
+    if (!contains(self.trackedContracts, _token))
+      self.trackedContracts.push(_token);
     return _insert(self._checkpoints[_token], key, value);
   }
 

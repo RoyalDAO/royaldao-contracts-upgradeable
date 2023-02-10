@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.6.0) (governance/extensions/GovernorVotes.sol)
-// RoyalDAO Contracts (last updated v1.1.4) (Governance/utils/SenateUpgradeable.sol)
+// RoyalDAO Contracts (last updated v1.2.0) (Governance/utils/SenateUpgradeable.sol)
 
 pragma solidity ^0.8.0;
 
@@ -25,7 +25,7 @@ import "../Utils/ArrayBytesUpgradeable.sol";
  * @dev Contract made to handle multiple tokens as members of the same DAO.
  *
  * _Available since v1.1._
- * Last Updated v1.1.1
+ * Last Updated v1.2.0
  *
  */
 abstract contract SenateUpgradeable is
@@ -412,6 +412,18 @@ abstract contract SenateUpgradeable is
     //emit event
     emit MemberAcceptance(_token, msg.sender);
   }
+
+  /**
+   * @dev Return a list of quarantined and banned members
+   */
+  function getInaptMembers() public view virtual returns (address[] memory) {
+    return _getInaptMembers();
+  }
+
+  /**
+   * @dev Return a list of quarantined and banned members
+   */
+  function _getInaptMembers() internal view virtual returns (address[] memory);
 
   /**
    * @dev Check if all members from list are valid.
