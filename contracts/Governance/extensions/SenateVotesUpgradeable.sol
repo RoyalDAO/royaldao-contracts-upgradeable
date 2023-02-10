@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// RoyalDAO Contracts (last updated v1.0.0) (Governance/extensions/SenateVotesUpgradeable.sol)
+// RoyalDAO Contracts (last updated v1.2.0) (Governance/extensions/SenateVotesUpgradeable.sol)
 // Uses OpenZeppelin Contracts and Libraries
 
 pragma solidity ^0.8.0;
@@ -13,6 +13,7 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "../SenateUpgradeable.sol";
 import "../../Governance/utils/ISenatorVotesUpgradeable.sol";
 import "../../Utils/CheckpointsUpgradeable.sol";
+import "../../Utils/SenateCheckpointsUpgradeable.sol";
 import "../../Utils/ArrayBytesUpgradeable.sol";
 
 /**
@@ -24,6 +25,7 @@ abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
   //TODO: Complex votes for single vote by token
   using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
   using CheckpointsUpgradeable for CheckpointsUpgradeable.History;
+  using SenateCheckpointsUpgradeable for SenateCheckpointsUpgradeable.History;
   using CountersUpgradeable for CountersUpgradeable.Counter;
   using BytesArrayLib32Upgradeable for bytes;
 
@@ -33,7 +35,7 @@ abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
   /**
    * @dev Senate Books. Keeps senator voting power for SenatorVotes Implementers
    */
-  mapping(address => CheckpointsUpgradeable.History)
+  mapping(address => SenateCheckpointsUpgradeable.History)
     internal _senateBooksCheckpoints;
   /**
    * @dev Senate Books. Keeps total voting power for SenatorVotes Implementers
@@ -91,15 +93,13 @@ abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
     address account,
     uint256 blockNumber
   ) public view virtual returns (uint256) {
-    if (
-      !_validateSenator(account) ||
-      !_validateMembers(_getRepresentation(account))
-    ) return 0;
+    if (!_validateSenator(account)) return 0;
 
     uint256 totalVotes;
 
     totalVotes += _senateBooksCheckpoints[account].getAtProbablyRecentBlock(
-      blockNumber
+      blockNumber,
+      _getInaptMembers()
     );
 
     if (oldDogsTokens.length() <= 0) return totalVotes;
@@ -223,7 +223,7 @@ abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
 
     //burn senator votes for the time being
     uint256 senatorVotes = _senateBooksCheckpoints[_senator]
-      .getAtProbablyRecentBlock(block.number - 1);
+      .getAtProbablyRecentBlock(block.number - 1, _getInaptMembers());
 
     if (senatorVotes > 0) {
       //burn senator votes
@@ -314,17 +314,23 @@ abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
     uint256 blockNumber,
     bytes memory /*params*/
   ) internal view virtual override returns (uint256) {
-    if (
-      !_validateSenator(account) ||
-      !_validateMembers(_getRepresentation(account))
-    ) return 0;
+    if (!_validateSenator(account)) return 0;
 
     uint256 totalVotes;
 
+    //console.log("Tracked Contracts: %o", _senateBooksCheckpoints[account].trackedContracts);
+    //bytes memory _trackedContracts = _senateBooksCheckpoints[account].trackedContracts;
+
+    //for(uint256 idx = 0; idx < BytesArrayLibAddressUpgradeable.count(_trackedContracts); idx++) {
+    //    console.log("Tracked Contracts: %o", BytesArrayLibAddressUpgradeable.getValue(_trackedContracts, idx));
+    //}
+
     totalVotes += _senateBooksCheckpoints[account].getAtProbablyRecentBlock(
-      blockNumber
+      blockNumber,
+      _getInaptMembers()
     );
 
+    //console.log("Total Votes: %o", totalVotes);
     if (oldDogsTokens.length() <= 0) return totalVotes;
 
     //call the old dogs
@@ -413,7 +419,7 @@ abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
 
       if (from != address(0) && _validateSenator(from)) {
         (uint256 oldValue, uint256 newValue) = _senateBooksCheckpoints[from]
-          .push(_subtract, amount);
+          .push(member, _subtract, amount);
 
         if (!isSenator) {
           _senatorRepresentationsBytes[from] = _senatorRepresentationsBytes[
@@ -425,9 +431,11 @@ abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
       }
       if (to != address(0) && _validateSenator(to)) {
         (uint256 oldValue, uint256 newValue) = _senateBooksCheckpoints[to].push(
+          member,
           _add,
           amount
         );
+
         _senatorRepresentationsBytes[to].insertStorage(_memberId);
 
         emit SenateBooksDelegateVotesChanged(member, to, oldValue, newValue);

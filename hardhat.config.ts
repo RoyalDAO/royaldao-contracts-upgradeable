@@ -1,37 +1,37 @@
-import { HardhatUserConfig, task } from "hardhat/config";
-import "@nomiclabs/hardhat-etherscan";
-import "@nomicfoundation/hardhat-toolbox";
-import "@typechain/hardhat";
-import "hardhat-gas-reporter";
-import "hardhat-deploy";
-import "@nomiclabs/hardhat-ethers";
-import "solidity-coverage";
-import "@openzeppelin/hardhat-upgrades";
-import "hardhat-contract-sizer";
-import * as dotenv from "dotenv";
-import "@nomiclabs/hardhat-web3";
-require("@nomiclabs/hardhat-waffle");
-dotenv.config();
+import { HardhatUserConfig, task } from "hardhat/config"
+import "@nomiclabs/hardhat-etherscan"
+import "@nomicfoundation/hardhat-toolbox"
+import "@typechain/hardhat"
+import "hardhat-gas-reporter"
+import "hardhat-deploy"
+import "@nomiclabs/hardhat-ethers"
+import "solidity-coverage"
+import "@openzeppelin/hardhat-upgrades"
+import "hardhat-contract-sizer"
+import * as dotenv from "dotenv"
+import "@nomiclabs/hardhat-web3"
+require("@nomiclabs/hardhat-waffle")
+dotenv.config()
 
 const MAINNET_RPC_URL =
   process.env.MAINNET_RPC_URL ||
-  "https://eth-mainnet.g.alchemy.com/v2/your-api-key";
+  "https://eth-mainnet.g.alchemy.com/v2/your-api-key"
 
 const GOERLI_RPC_URL =
   process.env.GOERLI_RPC_URL ||
-  "https://eth-goerli.g.alchemy.com/v2/your-api-key";
+  "https://eth-goerli.g.alchemy.com/v2/your-api-key"
 
 const MUMBAI_RPC_URL =
   process.env.MUMBAI_RPC_URL ||
-  "https://polygon-mumbai.g.alchemy.com/v2/your-api-key";
+  "https://polygon-mumbai.g.alchemy.com/v2/your-api-key"
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const PRIVATE_KEY = process.env.PRIVATE_KEY
 
 // Your API key for Etherscan, obtain one at https://etherscan.io/
 const ETHERSCAN_API_KEY =
-  process.env.ETHERSCAN_API_KEY || "Your etherscan API key";
+  process.env.ETHERSCAN_API_KEY || "Your etherscan API key"
 
-const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY;
+const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -121,13 +121,13 @@ const config: HardhatUserConfig = {
       //viaIR: true,
       optimizer: {
         enabled: true,
-        runs: 3000,
+        runs: 2500,
       },
     },
   },
   mocha: {
     timeout: 200000, // 200 seconds max for running tests
   },
-};
+}
 
-export default config;
+export default config
