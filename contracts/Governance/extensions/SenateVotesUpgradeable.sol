@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// RoyalDAO Contracts (last updated v1.2.0) (Governance/extensions/SenateVotesUpgradeable.sol)
+// RoyalDAO Contracts (last updated v1.2.1) (Governance/extensions/SenateVotesUpgradeable.sol)
 // Uses OpenZeppelin Contracts and Libraries
 
 pragma solidity ^0.8.0;
@@ -22,7 +22,7 @@ import "../../Utils/ArrayBytesUpgradeable.sol";
  * @custom:storage-size 51
  */
 abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
-  //TODO: Complex votes for single vote by token
+  //IDEA: Complex votes for single vote by token
   using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
   using CheckpointsUpgradeable for CheckpointsUpgradeable.History;
   using SenateCheckpointsUpgradeable for SenateCheckpointsUpgradeable.History;
@@ -110,7 +110,7 @@ abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
 
       totalVotes += IVotes(oldDogsTokens.values()[idx]).getPastVotes(
         account,
-        block.number - 1
+        blockNumber
       );
     }
 
@@ -178,18 +178,11 @@ abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
     bool updateTotalSupply
   ) internal virtual override {
     if (updateTotalSupply) {
-      if (
-        from == address(0) &&
-        _validateSenator(from) &&
-        _validateMember(memberId[member])
-      ) {
+      bool validMember = _validateMember(memberId[member]);
+      if (from == address(0) && _validateSenator(from) && validMember) {
         _totalSenateBooksCheckpoints.push(_add, amount);
       }
-      if (
-        to == address(0) &&
-        _validateSenator(to) &&
-        _validateMember(memberId[member])
-      ) {
+      if (to == address(0) && _validateSenator(to) && validMember) {
         _totalSenateBooksCheckpoints.push(_subtract, amount);
       }
     }
@@ -339,7 +332,7 @@ abstract contract SenateVotesUpgradeable is Initializable, SenateUpgradeable {
 
       totalVotes += IVotes(oldDogsTokens.values()[idx]).getPastVotes(
         account,
-        block.number - 1
+        blockNumber
       );
     }
 
